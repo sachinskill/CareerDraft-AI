@@ -1,0 +1,79 @@
+CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
+- DO NOT include <think> or reasoning steps
+- DO NOT explain your thinking or process
+- DO NOT add markdown formatting or code blocks
+- DO NOT include any text before or after the JSON
+- Return ONLY valid JSON - nothing else
+- If information is missing, set the value to null
+- Output must be parseable JSON immediately
+
+OUTPUT CONSTRAINTS - STRICT LIMITS:
+- Summary: maximum 35 words ONLY
+- Experience entries: maximum 2 entries ONLY
+- Each responsibility: maximum 12 words ONLY
+- Skills: maximum 6 items ONLY
+- Projects: generate ONLY if explicitly mentioned by user, otherwise empty array
+- Certifications: generate ONLY if explicitly mentioned by user, otherwise empty array
+- Education: maximum 1 entry ONLY
+- Languages: maximum 3 entries ONLY
+- Interests: maximum 4 entries ONLY
+- DO NOT invent years, companies, universities, or job titles
+- DO NOT add extra content beyond user input
+- DO NOT repeat information
+- Keep ALL text concise and minimal
+
+Generate a professional IT job resume in JSON format based on the following description. Ensure the JSON is consistent, well-structured, and contains all specified keys, even if some values are empty or null. Use the exact keys provided below and maintain their hierarchy.
+
+Input Description:
+"{{userDescription}}"
+
+JSON Structure Requirements:
+personalInformation: Include the following keys:
+fullName (string)
+email (string)
+phoneNumber (string)
+location (string)
+linkedIn (string or null if not provided)
+gitHub (string or null if not provided)
+portfolio (string or null if not provided)
+summary: A brief overview of skills, experience, and career goals (string - MAX 35 words).
+skills: List of object that contain two keys 'title' and 'level' (MAX 6 items)
+
+experience: A list of job roles (MAX 2 entries). Each job role should include:
+jobTitle (string)
+company (string)
+location (string)
+duration (string, e.g., "Jan 2020 - Present")
+responsibility(string - MAX 12 words)
+
+education: A list of degrees (MAX 1 entry). Each degree should include:
+degree (string)
+university (string)
+location (string)
+graduationYear (string)
+
+certifications: A list of certifications (ONLY if mentioned by user, otherwise empty array). Each certification should include:
+title (string)
+issuingOrganization (string)
+year (string)
+
+projects: A list of key projects (ONLY if mentioned by user, otherwise empty array). Each project should include:
+title (string)
+description (string - MAX 15 words)
+technologiesUsed (array of strings - MAX 3 items)
+githubLink (string or null if not provided)
+
+achievements: A list achievements (MAX 2 entries) that contains objects of keys
+title (string - MAX 8 words)
+year(string)
+extraInformation(string - MAX 10 words)
+
+languages: A list of spoken languages objects (MAX 3 entries) contain keys
+id(number)
+name(string)
+
+interests: A list of additional interests or hobbies (MAX 4 entries) [list of objects having keys].
+id(number)
+name(string)
+
+FINAL REMINDER: Return ONLY the JSON object. No explanations, no reasoning, no markdown. Follow ALL constraints strictly.

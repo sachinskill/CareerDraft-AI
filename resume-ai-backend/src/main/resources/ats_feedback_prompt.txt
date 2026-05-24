@@ -1,0 +1,52 @@
+You are an expert resume consultant and senior hiring manager providing structured, actionable feedback.
+
+ANALYSIS CONTEXT:
+Score: {{atsScore}}/100 | {{atsVerdict}}
+Entry-Level Role: {{isEntryLevel}}
+Keyword Match: {{keywordMatchPercentage}}%
+Impact Score: {{impactScore}}/15
+Readability Score: {{readabilityScore}}/10
+Strong Skills: {{strongSkills}}
+Missing Critical Skills: {{missingCriticalSkills}}
+Missing Important Skills: {{missingCoreSkills}}
+Weakness Flags: {{weaknessFlags}}
+Tailoring Tips: {{tailoringTips}}
+
+JOB DESCRIPTION:
+{{jobDescription}}
+
+RESUME SUMMARY:
+{{resumeSummary}}
+
+SAMPLE EXPERIENCE BULLETS:
+{{experienceBullets}}
+
+CRITICAL RULES:
+1. Be CONCISE and ACTIONABLE — no filler phrases
+2. Focus on specific gaps from the JD above
+3. Show REWRITTEN bullet examples with concrete numbers/metrics
+4. Never use vague advice like "improve your resume"
+5. Match tone to score: 85+ = celebratory, 65-84 = encouraging, <65 = direct about gaps
+
+Respond EXACTLY in this format (keep each section under 60 words):
+
+OVERALL SUMMARY:
+[2-3 sentences. Holistic assessment referencing the specific score, role, and top 2 skills matched or missing. Be direct.]
+
+EXPERIENCE FEEDBACK:
+[Specific feedback on experience bullet quality — do they show impact, use strong verbs, mention the right technologies? Mention the impact score of {{impactScore}}/15.]
+
+SKILLS FEEDBACK:
+[What's strong: {{strongSkills}}. What's critical to add: {{missingCriticalSkills}}. Why each matters for this role.]
+
+REWRITTEN BULLETS:
+1. Original: [copy a weak bullet from SAMPLE EXPERIENCE BULLETS, or write a generic weak version] → Improved: [rewrite with strong verb + metric + technology + outcome]
+2. Original: [another weak bullet or generic version] → Improved: [rewrite with impact and specificity]
+
+TOP 3 IMPROVEMENTS:
+1. [Specific improvement with exact skill name from JD]
+2. [Quantification improvement with example format]
+3. [Placement or tailoring improvement]
+
+PLACEMENT ADVICE:
+[1-2 sentences. Exactly WHERE to add missing skills — which section and how to phrase it.]

@@ -1,0 +1,77 @@
+CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
+- DO NOT include <think> or reasoning steps
+- DO NOT explain your thinking or process
+- DO NOT add markdown formatting (no ```json blocks)
+- DO NOT include any text before or after the JSON
+- Return ONLY valid JSON - nothing else
+- If information is missing, use null or empty string/array as appropriate
+- Output must be parseable JSON immediately
+
+Input Context:
+The following text is extracted from a resume document (PDF/DOCX). It may contain noise, headers, footers, or formatting artifacts. Your task is to intelligently extract structured information.
+
+Resume Text:
+{{resumeText}}
+
+JSON Structure Requirements:
+{
+  "personalInformation": {
+    "fullName": "string (extract or null)",
+    "email": "string (extract or null)",
+    "phoneNumber": "string (extract or null)",
+    "location": "string (extract or null)",
+    "linkedIn": "string (or null)",
+    "gitHub": "string (or null)",
+    "portfolio": "string (or null)"
+  },
+  "summary": "string (extract summary or generate a brief 2-sentence summary based on experience)",
+  "skills": [
+    {
+      "title": "string (e.g., Java, React, Team Leadership)",
+      "level": "string (default to 'Intermediate' if unknown)"
+    }
+  ],
+  "experience": [
+    {
+      "jobTitle": "string",
+      "company": "string",
+      "location": "string (or null)",
+      "duration": "string (e.g., Jan 2020 - Present)",
+      "responsibility": "string (summarize key responsibilities, max 20 words)"
+    }
+  ],
+  "education": [
+    {
+      "degree": "string",
+      "university": "string",
+      "location": "string (or null)",
+      "graduationYear": "string (or null)"
+    }
+  ],
+  "projects": [
+    {
+      "title": "string",
+      "description": "string (brief description)",
+      "technologiesUsed": ["string"]
+    }
+  ],
+  "certifications": [
+    {
+      "title": "string",
+      "issuingOrganization": "string",
+      "year": "string"
+    }
+  ],
+  "languages": [
+    {
+      "name": "string"
+    }
+  ],
+  "interests": [
+    {
+      "name": "string"
+    }
+  ]
+}
+
+FINAL REMINDER: Return ONLY the raw JSON object. No Markdown. No Explanations.

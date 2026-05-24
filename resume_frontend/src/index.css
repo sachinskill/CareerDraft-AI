@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 45%, #faf5ff 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #1e293b;
+  }
+
+  /* Thin, elegant scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  *::-webkit-scrollbar { width: 5px; height: 5px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+}
+
+/* ── Component tokens ──────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Card — white, soft shadow, rounded */
+  .saas-card {
+    @apply bg-white rounded-2xl border border-gray-100 shadow-card;
+  }
+  .saas-card-hover {
+    @apply saas-card transition-shadow duration-200 hover:shadow-card-hover;
+  }
+
+  /* Gradient brand button */
+  .btn-brand {
+    @apply text-white font-semibold rounded-xl px-5 py-2.5 text-sm
+           transition-all duration-200 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    box-shadow: 0 4px 14px 0 rgb(99 102 241 / 0.30);
+  }
+  .btn-brand:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
+    box-shadow: 0 6px 20px 0 rgb(99 102 241 / 0.40);
+    transform: translateY(-1px);
+  }
+
+  /* Soft outline button */
+  .btn-soft {
+    @apply bg-white text-gray-700 font-medium rounded-xl px-5 py-2.5 text-sm
+           border border-gray-200 transition-all duration-200
+           hover:bg-gray-50 hover:border-gray-300 active:scale-95;
+  }
+
+  /* Ghost button */
+  .btn-ghost-light {
+    @apply text-gray-500 font-medium rounded-xl px-4 py-2 text-sm
+           transition-all duration-150 hover:bg-gray-100 hover:text-gray-800 active:scale-95;
+  }
+
+  /* Input field */
+  .input-light {
+    @apply w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm
+           text-gray-800 placeholder-gray-400 outline-none
+           transition-all duration-150
+           focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100;
+  }
+
+  /* Textarea */
+  .textarea-light {
+    @apply input-light resize-none;
+  }
+
+  /* Section heading */
+  .section-title {
+    @apply text-lg font-bold text-gray-800;
+  }
+
+  /* Badge */
+  .badge-light {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium
+           bg-indigo-50 text-indigo-700 border border-indigo-100;
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left
+           text-sm font-medium text-gray-500 transition-all duration-150
+           hover:bg-gray-50 hover:text-gray-800;
+  }
+  .nav-item-active {
+    @apply bg-gradient-to-r from-indigo-50 to-purple-50
+           text-indigo-700 border border-indigo-100/60;
+  }
+
+  /* Score ring wrapper */
+  .score-ring-success { color: #10b981; }
+  .score-ring-warning { color: #f59e0b; }
+  .score-ring-error   { color: #ef4444; }
+
+  /* Top bar */
+  .topbar {
+    @apply bg-white/80 backdrop-blur-md border-b border-gray-100
+           px-5 py-3 flex items-center justify-between gap-3;
+  }
+}
