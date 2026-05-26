@@ -29,99 +29,202 @@ import ModernTemplate from "../components/Templates/ModernTemplate";
 import MinimalistTemplate from "../components/Templates/MinimalistTemplate";
 import DynamicTemplate, { SAMPLE_DATA } from "../templates/DynamicTemplate";
 import { getTemplate, TEMPLATES, THEMES, FONTS } from "../templates/templateConfig";
+import { PREVIEW_DATA } from "../templates/templatePreviewData";
 
 
 const EMPTY = {
-  personalInformation: { fullName: "", email: "", phoneNumber: "", location: "", linkedIn: "", gitHub: "", portfolio: "" },
-  summary: "",
-  skills: [],
-  experience: [],
-  education: [],
-  projects: [],
-  certifications: [],
-  languages: [],
-  interests: [],
+  personalInformation: {
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    location: "",
+    targetJobTitle: "",
+    profilePhoto: "",
+    links: []
+  },
+  sections: [
+    { id: "summary", type: "summary", title: "Professional Summary", data: "", order: 0, visible: true },
+    { id: "skills", type: "skills", title: "Skills", data: [], order: 1, visible: true },
+    { id: "experience", type: "experience", title: "Work Experience", data: [], order: 2, visible: true },
+    { id: "education", type: "education", title: "Education", data: [], order: 3, visible: true },
+    { id: "projects", type: "projects", title: "Projects", data: [], order: 4, visible: true }
+  ]
+};
+
+const syncResumeData = (d) => {
+  if (!d) return d;
+  const updatedDraft = { ...d };
+  
+  if (!Array.isArray(updatedDraft.sections)) {
+    updatedDraft.sections = [];
+  }
+  
+  const coreTypes = ["summary", "skills", "experience", "education", "projects"];
+  coreTypes.forEach(type => {
+    let sec = updatedDraft.sections.find(s => s.type === type);
+    if (!sec) {
+      const maxOrder = updatedDraft.sections.length > 0 
+        ? Math.max(...updatedDraft.sections.map(s => s.order ?? 0)) + 1 
+        : 0;
+      sec = {
+        id: type,
+        type,
+        title: type === "summary" ? "Professional Summary" : 
+               type === "skills" ? "Skills" : 
+               type === "experience" ? "Work Experience" : 
+               type === "education" ? "Education" : 
+               type === "projects" ? "Projects" : type,
+        data: updatedDraft[type] || (type === "summary" ? "" : []),
+        order: maxOrder,
+        visible: true
+      };
+      updatedDraft.sections.push(sec);
+    } else {
+      sec.data = updatedDraft[type];
+    }
+  });
+
+  updatedDraft.sections.forEach(sec => {
+    if (sec.type) {
+      updatedDraft[sec.type] = sec.data;
+    }
+  });
+
+  updatedDraft.sections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return updatedDraft;
 };
 
 const normalizeResumeData = (d) => {
   if (!d) return EMPTY;
   
   const pi = d.personalInformation || {};
+  const links = Array.isArray(pi.links) ? [...pi.links] : [];
+  if (links.length === 0) {
+    if (pi.linkedIn) links.push({ platform: "LinkedIn", url: pi.linkedIn });
+    if (pi.gitHub) links.push({ platform: "GitHub", url: pi.gitHub });
+    if (pi.portfolio) links.push({ platform: "Portfolio", url: pi.portfolio });
+  }
+
   const personalInformation = {
     fullName: pi.fullName || "",
     email: pi.email || "",
     phoneNumber: pi.phoneNumber || "",
     location: pi.location || "",
-    linkedIn: pi.linkedIn || "",
-    gitHub: pi.gitHub || "",
-    portfolio: pi.portfolio || ""
+    targetJobTitle: pi.targetJobTitle || "",
+    profilePhoto: pi.profilePhoto || "",
+    links
   };
-  
-  const skills = Array.isArray(d.skills) ? d.skills.map(s => {
-    if (typeof s === "string") return { title: s, level: "Intermediate" };
-    return { title: s.title || s.name || "", level: s.level || "Intermediate" };
-  }) : [];
-  
-  const experience = Array.isArray(d.experience) ? d.experience.map(e => {
-    return {
-      title: e.title || e.jobTitle || "",
-      company: e.company || "",
-      startDate: e.startDate || e.duration || "",
-      endDate: e.endDate || "",
-      description: e.description || e.responsibility || e.responsibilities || ""
-    };
-  }) : [];
 
-  const education = Array.isArray(d.education) ? d.education.map(edu => {
-    return {
-      degree: edu.degree || "",
-      institution: edu.institution || edu.university || "",
-      startDate: edu.startDate || "",
-      endDate: edu.endDate || edu.graduationYear || "",
-      description: edu.description || edu.location || ""
-    };
-  }) : [];
+  let sections = [];
+  if (Array.isArray(d.sections) && d.sections.length > 0) {
+    sections = d.sections.map((s, idx) => {
+      return {
+        id: s.id || s.type || `section_${idx}`,
+        type: s.type || "custom",
+        title: s.title || "Section",
+        data: s.data,
+        order: s.order ?? idx,
+        visible: s.visible !== false
+      };
+    });
+  } else {
+    // Generate sections from legacy keys
+    let order = 0;
+    
+    // Summary
+    sections.push({ 
+      id: "summary", 
+      type: "summary", 
+      title: "Professional Summary", 
+      data: d.summary || "", 
+      order: order++, 
+      visible: true 
+    });
 
-  const projects = Array.isArray(d.projects) ? d.projects.map(p => {
-    return {
-      title: p.title || "",
-      description: p.description || "",
-      link: p.link || p.githubLink || ""
-    };
-  }) : [];
+    // Skills
+    const skills = Array.isArray(d.skills) ? d.skills.map(s => {
+      if (typeof s === "string") return { title: s, level: "Intermediate" };
+      return { title: s.title || s.name || "", level: s.level || "Intermediate" };
+    }) : [];
+    sections.push({ id: "skills", type: "skills", title: "Skills", data: skills, order: order++, visible: true });
 
-  const certifications = Array.isArray(d.certifications) ? d.certifications.map(c => {
-    return {
-      title: c.title || "",
-      issuer: c.issuer || c.issuingOrganization || "",
-      issueDate: c.issueDate || c.year || ""
-    };
-  }) : [];
+    // Experience
+    const experience = Array.isArray(d.experience) ? d.experience.map(e => {
+      return {
+        title: e.title || e.jobTitle || "",
+        company: e.company || "",
+        startDate: e.startDate || e.duration || "",
+        endDate: e.endDate || "",
+        description: e.description || e.responsibility || e.responsibilities || ""
+      };
+    }) : [];
+    sections.push({ id: "experience", type: "experience", title: "Work Experience", data: experience, order: order++, visible: true });
 
-  const languages = Array.isArray(d.languages) ? d.languages.map(l => {
-    return {
-      language: l.language || l.name || "",
-      proficiency: l.proficiency || "Professional working proficiency"
-    };
-  }) : [];
+    // Education
+    const education = Array.isArray(d.education) ? d.education.map(edu => {
+      return {
+        degree: edu.degree || "",
+        institution: edu.institution || edu.university || "",
+        startDate: edu.startDate || "",
+        endDate: edu.endDate || edu.graduationYear || "",
+        description: edu.description || ""
+      };
+    }) : [];
+    sections.push({ id: "education", type: "education", title: "Education", data: education, order: order++, visible: true });
 
-  const interests = Array.isArray(d.interests) ? d.interests.map(i => {
-    return {
-      interest: i.interest || i.name || ""
-    };
-  }) : [];
+    // Projects
+    const projects = Array.isArray(d.projects) ? d.projects.map(p => {
+      return {
+        title: p.title || "",
+        description: p.description || "",
+        link: p.link || p.githubLink || ""
+      };
+    }) : [];
+    sections.push({ id: "projects", type: "projects", title: "Projects", data: projects, order: order++, visible: true });
 
-  return {
+    // Certifications
+    if (Array.isArray(d.certifications) && d.certifications.length > 0) {
+      const certifications = d.certifications.map(c => ({
+        title: c.title || "", issuer: c.issuer || "", issueDate: c.issueDate || ""
+      }));
+      sections.push({ id: "certifications", type: "certifications", title: "Certifications", data: certifications, order: order++, visible: true });
+    }
+    // Languages
+    if (Array.isArray(d.languages) && d.languages.length > 0) {
+      const languages = d.languages.map(l => ({
+        language: l.language || l.name || "", proficiency: l.proficiency || "Professional working proficiency"
+      }));
+      sections.push({ id: "languages", type: "languages", title: "Languages", data: languages, order: order++, visible: true });
+    }
+    // Interests
+    if (Array.isArray(d.interests) && d.interests.length > 0) {
+      const interests = d.interests.map(i => ({ interest: i.interest || i.name || "" }));
+      sections.push({ id: "interests", type: "interests", title: "Interests", data: interests, order: order++, visible: true });
+    }
+  }
+
+  // Ensure sections are sorted
+  sections.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  const result = {
     personalInformation,
-    summary: d.summary || "",
-    skills,
-    experience,
-    education,
-    projects,
-    certifications,
-    languages,
-    interests
+    sections,
+    summary: "",
+    skills: [],
+    experience: [],
+    education: [],
+    projects: [],
+    certifications: [],
+    languages: [],
+    interests: []
   };
+
+  // Sync sections to top-level keys for backward-compatibility
+  sections.forEach(s => {
+    result[s.type] = s.data;
+  });
+
+  return syncResumeData(result);
 };
 
 // ── Steps config ──────────────────────────────────────────────────────────────
@@ -202,10 +305,71 @@ const ScoreRing = ({ score }) => {
 
 // ── Step: Basics ──────────────────────────────────────────────────────────────
 const StepBasics = ({ data, onChange }) => {
-  const pi = data.personalInformation;
+  const pi = data.personalInformation || {};
   const set = (field, val) => onChange({ ...data, personalInformation: { ...pi, [field]: val } });
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        // Crop & resize to a standard 120x120px square
+        const size = 120;
+        canvas.width = size;
+        canvas.height = size;
+        
+        const minDim = Math.min(img.width, img.height);
+        const sx = (img.width - minDim) / 2;
+        const sy = (img.height - minDim) / 2;
+        
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+        const croppedBase64 = canvas.toDataURL("image/jpeg", 0.8);
+        set("profilePhoto", croppedBase64);
+        toast.success("Profile photo uploaded and optimized!");
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    set("profilePhoto", "");
+    toast.success("Profile photo removed.");
+  };
+
+  const addLink = () => {
+    const links = Array.isArray(pi.links) ? [...pi.links] : [];
+    links.push({ platform: "LinkedIn", url: "" });
+    set("links", links);
+  };
+
+  const removeLink = (idx) => {
+    const links = Array.isArray(pi.links) ? pi.links.filter((_, i) => i !== idx) : [];
+    set("links", links);
+  };
+
+  const updateLink = (idx, field, val) => {
+    const links = Array.isArray(pi.links) ? [...pi.links] : [];
+    links[idx] = { ...links[idx], [field]: val };
+    set("links", links);
+  };
+
+  const PLATFORMS = [
+    "LinkedIn", "GitHub", "Portfolio", "Website", "Behance", 
+    "Dribbble", "Medium", "Kaggle", "ResearchGate", "StackOverflow", "Other"
+  ];
+
   return (
-    <div className="space-y-5 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn">
       <div>
         <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
           Personal Information
@@ -215,16 +379,55 @@ const StepBasics = ({ data, onChange }) => {
             <span className="badge badge-success text-[10px] gap-1 font-bold py-2"><FaCheck size={8} className="text-white" /> Complete</span>
           )}
         </h2>
-        <p className="text-sm text-gray-500 mt-0.5">Your contact details and professional links</p>
+        <p className="text-sm text-gray-500 mt-0.5">Your contact details, profile photo and professional links</p>
       </div>
+
+      {/* Profile Photo Uploader */}
+      <div className="bg-slate-50 dark:bg-slate-900/20 p-4 rounded-xl border border-gray-100 dark:border-slate-800 flex items-center gap-4">
+        {pi.profilePhoto ? (
+          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-500 shrink-0">
+            <img src={pi.profilePhoto} alt="Profile Preview" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-950/20 flex items-center justify-center text-indigo-500 shrink-0 border border-dashed border-indigo-200">
+            <FaUser size={20} />
+          </div>
+        )}
+        <div className="space-y-1.5">
+          <span className="block text-xs font-bold text-gray-700">Profile Image (Optional)</span>
+          <div className="flex gap-2">
+            <label className="btn btn-xs btn-outline btn-primary px-3 py-1 cursor-pointer h-7 min-h-7 rounded-lg text-[10px] font-bold">
+              Upload Photo
+              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+            </label>
+            {pi.profilePhoto && (
+              <button type="button" onClick={removePhoto} className="btn btn-xs btn-outline btn-error px-3 py-1 h-7 min-h-7 rounded-lg text-[10px] font-bold">
+                Remove
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Target Job Title */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Target Job Title</label>
+        <input 
+          type="text" 
+          value={pi.targetJobTitle || ""} 
+          onChange={e => set("targetJobTitle", e.target.value)}
+          className="input-light" 
+          placeholder="e.g. Java Developer, Business Analyst, Teacher" 
+        />
+      </div>
+
+      {/* Contact Fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
-          ["fullName", "Full Name", "text", !pi.fullName, "Please enter your full name for ATS screening"],
-          ["email", "Email", "email", !pi.email, "Email address is critical for recruiter contact"],
+          ["fullName", "Full Name", "text", !pi.fullName, "Please enter your name"],
+          ["email", "Email", "email", !pi.email, "Required for recruiter contact"],
           ["phoneNumber", "Phone", "tel", false],
           ["location", "Location", "text", false],
-          ["linkedIn", "LinkedIn URL", "url", !pi.linkedIn, "Recruiters look for your LinkedIn profile"],
-          ["gitHub", "GitHub URL", "url", false],
         ].map(([field, label, type, isWarning, warningText]) => (
           <div key={field} className={isWarning ? "p-1 rounded-xl ring-2 ring-amber-500/10 bg-amber-500/5 transition-all duration-300" : ""}>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5 flex justify-between">
@@ -235,6 +438,47 @@ const StepBasics = ({ data, onChange }) => {
               className={`input-light ${isWarning ? "border-amber-300 focus:border-amber-500 focus:ring-amber-500/20" : ""}`} placeholder={label} />
           </div>
         ))}
+      </div>
+
+      {/* Professional Links */}
+      <div className="space-y-3.5 border-t border-gray-100 pt-4">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Professional Links</span>
+          <button type="button" onClick={addLink} className="btn btn-xs btn-primary gap-1 px-2.5 py-1 text-[10px] font-bold rounded-lg">
+            <FaPlus size={8} /> Add Link
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {Array.isArray(pi.links) && pi.links.map((link, idx) => (
+            <div key={idx} className="flex gap-2 items-center animate-fadeIn">
+              <select 
+                value={link.platform} 
+                onChange={e => updateLink(idx, "platform", e.target.value)}
+                className="input-light w-36 cursor-pointer text-xs"
+              >
+                {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <input 
+                type="url" 
+                value={link.url || ""} 
+                onChange={e => updateLink(idx, "url", e.target.value)}
+                placeholder="https://..." 
+                className="input-light flex-1 text-xs"
+              />
+              <button 
+                type="button" 
+                onClick={() => removeLink(idx)} 
+                className="text-gray-300 hover:text-red-500 transition-colors p-2"
+              >
+                <FaTrash size={12} />
+              </button>
+            </div>
+          ))}
+          {(!Array.isArray(pi.links) || pi.links.length === 0) && (
+            <p className="text-xs text-gray-400 py-1">No professional links added yet. Click 'Add Link' above.</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -553,6 +797,7 @@ const StepExperience = ({ data, onChange, user, setShowUpgradeModal, refreshUser
 
 // ── Step: Education ───────────────────────────────────────────────────────────
 const StepEducation = ({ data, onChange }) => {
+  const [expandedIndex, setExpandedIndex] = useState(null);
   const add = () => onChange({ ...data, education: [...data.education, { degree: "", institution: "", startDate: "", endDate: "", description: "" }] });
   const remove = (i) => onChange({ ...data, education: data.education.filter((_, idx) => idx !== i) });
   const update = (i, field, val) => {
@@ -560,6 +805,11 @@ const StepEducation = ({ data, onChange }) => {
     edu[i] = { ...edu[i], [field]: val };
     onChange({ ...data, education: edu });
   };
+
+  const toggleExpand = (idx) => {
+    setExpandedIndex(expandedIndex === idx ? null : idx);
+  };
+
   return (
     <div className="space-y-5 animate-fadeIn">
       <div className="flex items-start justify-between">
@@ -594,6 +844,26 @@ const StepEducation = ({ data, onChange }) => {
               className="input-light" placeholder="Start Year" />
             <input value={edu.endDate} onChange={e => update(i, "endDate", e.target.value)}
               className="input-light" placeholder="End Year (or Present)" />
+          </div>
+
+          <div className="pt-1.5">
+            <button
+              type="button"
+              onClick={() => toggleExpand(i)}
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1"
+            >
+              {expandedIndex === i ? "▼" : "▶"} [ Optional Details ]
+            </button>
+            {expandedIndex === i && (
+              <div className="mt-2.5 animate-fadeIn">
+                <textarea
+                  value={edu.description || ""}
+                  onChange={e => update(i, "description", e.target.value)}
+                  className="textarea-light h-24"
+                  placeholder="coursework, thesis, GPA explanation, achievements, academic projects, honors"
+                />
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -833,7 +1103,7 @@ const ResumePreview = ({ data, template, onTemplateChange, printRef }) => {
                       <div className="relative overflow-hidden bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-805 shrink-0" style={{ height: "185px" }}>
                         <div className="absolute inset-0 flex items-start justify-center pt-2 px-2">
                           <div className="shadow bg-white overflow-hidden origin-top scale-[0.3]" style={{ width: "595px", height: "842px" }}>
-                            <DynamicTemplate data={data || SAMPLE_DATA} config={{ ...t, theme: selectedTheme, font: selectedFont }} />
+                            <DynamicTemplate data={PREVIEW_DATA} config={{ ...t, theme: selectedTheme, font: selectedFont }} />
                           </div>
                         </div>
                         {isSel && (
@@ -945,7 +1215,7 @@ const calculateResumeStrength = (data) => {
 };
 
 // ── ATS hint panel ────────────────────────────────────────────────────────────
-const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep, recalculating, strength }) => {
+const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep, recalculating, strength, steps }) => {
   const a = atsContext?.atsAnalysis;
   const initialScore = atsContext?.currentScore || 0;
   const currentScore = a?.atsScore || initialScore;
@@ -1032,7 +1302,7 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
       if (pi.fullName) checks += 1;
       if (pi.email) checks += 1;
       if (pi.phoneNumber) checks += 1;
-      if (pi.linkedIn) checks += 1;
+      if (pi.linkedIn || (Array.isArray(pi.links) && pi.links.some(l => l.platform.toLowerCase() === "linkedin"))) checks += 1;
       
       readabilityScore = Math.min(100, 60 + (checks * 10));
       readabilityDesc = checks >= 3 ? "Excellent format and parsing structure." : "Improve formatting and contact details.";
@@ -1066,7 +1336,10 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
         reason: "Your professional summary is empty. AI needs text to enhance it.",
         pts: 12,
         actionLabel: "Write Summary",
-        execute: () => setStep(1)
+        execute: () => {
+          const idx = steps?.findIndex(s => s.id === "summary");
+          setStep(idx !== -1 ? idx : 1);
+        }
       });
     } else {
       if (resumeData.summary.trim().length < 120) {
@@ -1076,7 +1349,10 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
           reason: "Your summary is too brief. Expand it to 2-3 sentences to capture recruiter focus.",
           pts: 5,
           actionLabel: "Expand Summary",
-          execute: () => setStep(1)
+          execute: () => {
+            const idx = steps?.findIndex(s => s.id === "summary");
+            setStep(idx !== -1 ? idx : 1);
+          }
         });
       }
       if (!/\d+/.test(resumeData.summary)) {
@@ -1086,7 +1362,10 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
           reason: "Your summary lacks impact numbers or scope metrics.",
           pts: 6,
           actionLabel: "Add Metrics",
-          execute: () => setStep(1)
+          execute: () => {
+            const idx = steps?.findIndex(s => s.id === "summary");
+            setStep(idx !== -1 ? idx : 1);
+          }
         });
       }
     }
@@ -1101,7 +1380,8 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
         pts: 25,
         actionLabel: "Add Job",
         execute: () => {
-          setStep(3);
+          const idx = steps?.findIndex(s => s.id === "experience");
+          setStep(idx !== -1 ? idx : 3);
           if (setDraft) {
             setDraft(prev => ({
               ...prev,
@@ -1124,7 +1404,10 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
           reason: `Role ${missingMetricsIndices[0] + 1} (${resumeData.experience[missingMetricsIndices[0]].title || 'Job'}): Bullet points lack quantification.`,
           pts: 10,
           actionLabel: "Quantify",
-          execute: () => setStep(3)
+          execute: () => {
+            const idx = steps?.findIndex(s => s.id === "experience");
+            setStep(idx !== -1 ? idx : 3);
+          }
         });
       }
     }
@@ -1147,10 +1430,20 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
             actionLabel: "Add Skill",
             execute: () => {
               if (setDraft) {
-                setDraft(prev => ({
-                  ...prev,
-                  skills: [...prev.skills, { title: skillName, level: "Intermediate" }]
-                }));
+                setDraft(prev => {
+                  const skills = [...prev.skills, { title: skillName, level: "Intermediate" }];
+                  const updatedSections = prev.sections.map(sec => {
+                    if (sec.type === "skills") {
+                      return { ...sec, data: skills };
+                    }
+                    return sec;
+                  });
+                  return {
+                    ...prev,
+                    skills,
+                    sections: updatedSections
+                  };
+                });
                 toast.success(`Added "${skillName}" to skills!`);
               }
             }
@@ -1161,19 +1454,23 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
 
     // Personal Info
     const pi = resumeData.personalInformation || {};
-    if (!pi.linkedIn) {
+    const hasLinkedIn = pi.linkedIn || (Array.isArray(pi.links) && pi.links.some(l => l.platform.toLowerCase() === "linkedin"));
+    if (!hasLinkedIn) {
       list.push({
         id: "info-linkedin",
         category: "Readability",
         reason: "Missing LinkedIn Profile URL",
         pts: 4,
         actionLabel: "Add LinkedIn",
-        execute: () => setStep(0)
+        execute: () => {
+          const idx = steps?.findIndex(s => s.id === "basics");
+          setStep(idx !== -1 ? idx : 0);
+        }
       });
     }
 
     return list;
-  }, [resumeData, state, atsContext, setDraft, setStep]);
+  }, [resumeData, state, atsContext, setDraft, setStep, steps]);
 
   return (
     <div className="space-y-4 animate-fadeIn">
@@ -1403,6 +1700,426 @@ const AtsHintPanel = ({ atsContext, setAtsContext, resumeData, setDraft, setStep
   );
 };
 
+// ── Step: Generic Section (Optional / Custom) ─────────────────────────────────
+const StepGenericSection = ({ section, onChange }) => {
+  const dataList = Array.isArray(section.data) ? section.data : [];
+
+  const addEntry = () => {
+    let newEntry = {};
+    if (section.type === "languages") {
+      newEntry = { language: "", proficiency: "Full professional proficiency" };
+    } else if (section.type === "interests" || section.type === "hobbies") {
+      newEntry = { name: "" };
+    } else if (section.type === "certifications") {
+      newEntry = { title: "", issuer: "", issueDate: "" };
+    } else if (section.type === "courses" || section.type === "training") {
+      newEntry = { title: "", institution: "", startDate: "", endDate: "", description: "" };
+    } else if (["volunteering", "extracurricular", "additional_experience", "research", "affiliations"].includes(section.type)) {
+      newEntry = { title: "", company: "", startDate: "", endDate: "", description: "" };
+    } else {
+      // Custom / generic entries
+      newEntry = { title: "", subtitle: "", date: "", description: "" };
+    }
+    onChange([...dataList, newEntry]);
+  };
+
+  const removeEntry = (i) => {
+    onChange(dataList.filter((_, idx) => idx !== i));
+  };
+
+  const updateEntry = (i, field, val) => {
+    const copy = [...dataList];
+    copy[i] = { ...copy[i], [field]: val };
+    onChange(copy);
+  };
+
+  return (
+    <div className="space-y-5 animate-fadeIn">
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
+          <p className="text-sm text-gray-550 mt-0.5">Manage entries for your {section.title.toLowerCase()} section</p>
+        </div>
+        {section.type !== "interests" && section.type !== "hobbies" && (
+          <button onClick={addEntry} className="btn-brand flex items-center gap-1.5 text-xs px-3 py-2">
+            <FaPlus size={10} /> Add Item
+          </button>
+        )}
+      </div>
+
+      {section.type === "interests" || section.type === "hobbies" ? (
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <input 
+              id={`tag-input-${section.id}`}
+              type="text" 
+              className="input-light flex-1" 
+              placeholder="e.g. Hiking, Photography, Chess…" 
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const val = e.target.value.trim();
+                  if (val) {
+                    if (dataList.some(item => (item.interest || item.name || item).toLowerCase() === val.toLowerCase())) {
+                      toast.error("Already exists");
+                      return;
+                    }
+                    onChange([...dataList, { name: val }]);
+                    e.target.value = "";
+                  }
+                }
+              }}
+            />
+            <button 
+              type="button"
+              onClick={() => {
+                const el = document.getElementById(`tag-input-${section.id}`);
+                const val = el.value.trim();
+                if (val) {
+                  onChange([...dataList, { name: val }]);
+                  el.value = "";
+                }
+              }}
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center hover:shadow-brand transition-all active:scale-95 shrink-0"
+            >
+              <FaPlus size={12} />
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {dataList.map((item, i) => {
+              const name = item.interest || item.name || (typeof item === "string" ? item : "");
+              return (
+                <span key={i} className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full px-3 py-1.5 text-sm font-medium animate-fadeIn">
+                  {name}
+                  <button onClick={() => removeEntry(i)} className="text-indigo-300 hover:text-red-400 transition-colors ml-0.5">
+                    <FaTrash size={9} />
+                  </button>
+                </span>
+              );
+            })}
+            {dataList.length === 0 && (
+              <p className="text-sm text-gray-400 py-2">No items added yet — type and press Enter</p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {dataList.length === 0 && (
+            <div className="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl">
+              <FaFileAlt className="text-3xl mx-auto mb-2 text-gray-300" />
+              <p className="text-sm text-gray-400">No entries added yet</p>
+            </div>
+          )}
+          {dataList.map((item, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-card p-5 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Item {i + 1}</span>
+                <button onClick={() => removeEntry(i)} className="text-gray-300 hover:text-red-400 transition-colors p-1">
+                  <FaTrash size={12} />
+                </button>
+              </div>
+
+              {section.type === "languages" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input 
+                    value={item.language || ""} 
+                    onChange={e => updateEntry(i, "language", e.target.value)}
+                    className="input-light" 
+                    placeholder="Language (e.g. English, French)" 
+                  />
+                  <select 
+                    value={item.proficiency || "Professional working proficiency"} 
+                    onChange={e => updateEntry(i, "proficiency", e.target.value)}
+                    className="input-light cursor-pointer text-xs"
+                  >
+                    <option>Native / Bilingual</option>
+                    <option>Full professional proficiency</option>
+                    <option>Professional working proficiency</option>
+                    <option>Limited working proficiency</option>
+                    <option>Elementary proficiency</option>
+                  </select>
+                </div>
+              ) : section.type === "certifications" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <input 
+                    value={item.title || ""} 
+                    onChange={e => updateEntry(i, "title", e.target.value)}
+                    className="input-light" 
+                    placeholder="Certification Name" 
+                  />
+                  <input 
+                    value={item.issuer || ""} 
+                    onChange={e => updateEntry(i, "issuer", e.target.value)}
+                    className="input-light" 
+                    placeholder="Issuing Organization" 
+                  />
+                  <input 
+                    value={item.issueDate || ""} 
+                    onChange={e => updateEntry(i, "issueDate", e.target.value)}
+                    className="input-light" 
+                    placeholder="Date / Year" 
+                  />
+                </div>
+              ) : ["volunteering", "extracurricular", "additional_experience", "research", "affiliations"].includes(section.type) ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input 
+                      value={item.title || ""} 
+                      onChange={e => updateEntry(i, "title", e.target.value)}
+                      className="input-light" 
+                      placeholder="Role / Title" 
+                    />
+                    <input 
+                      value={item.company || ""} 
+                      onChange={e => updateEntry(i, "company", e.target.value)}
+                      className="input-light" 
+                      placeholder="Organization / Institution" 
+                    />
+                    <input 
+                      value={item.startDate || ""} 
+                      onChange={e => updateEntry(i, "startDate", e.target.value)}
+                      className="input-light" 
+                      placeholder="Start (e.g. Jan 2022)" 
+                    />
+                    <input 
+                      value={item.endDate || ""} 
+                      onChange={e => updateEntry(i, "endDate", e.target.value)}
+                      className="input-light" 
+                      placeholder="End (or Present)" 
+                    />
+                  </div>
+                  <textarea 
+                    value={item.description || ""} 
+                    onChange={e => updateEntry(i, "description", e.target.value)}
+                    className="textarea-light h-20" 
+                    placeholder="Describe your responsibilities, duties and achievements..." 
+                  />
+                </div>
+              ) : (
+                // Custom / licenses / awards / patents / conferences / publications / references / generic
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input 
+                      value={item.title || ""} 
+                      onChange={e => updateEntry(i, "title", e.target.value)}
+                      className="input-light" 
+                      placeholder="Title / Name" 
+                    />
+                    <input 
+                      value={item.subtitle || ""} 
+                      onChange={e => updateEntry(i, "subtitle", e.target.value)}
+                      className="input-light" 
+                      placeholder="Subtitle / Organization / Issuer" 
+                    />
+                    <input 
+                      value={item.date || ""} 
+                      onChange={e => updateEntry(i, "date", e.target.value)}
+                      className="input-light" 
+                      placeholder="Date / Duration" 
+                    />
+                  </div>
+                  <textarea 
+                    value={item.description || ""} 
+                    onChange={e => updateEntry(i, "description", e.target.value)}
+                    className="textarea-light h-20" 
+                    placeholder="Provide additional details or descriptions..." 
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Step: Manage Sections ─────────────────────────────────────────────────────
+const StepManageSections = ({ data, onChange }) => {
+  const sections = Array.isArray(data.sections) ? [...data.sections] : [];
+
+  const OPTIONAL_SECTIONS = [
+    { type: "certifications", label: "Certifications" },
+    { type: "courses", label: "Courses" },
+    { type: "licenses", label: "Licenses" },
+    { type: "awards", label: "Awards" },
+    { type: "languages", label: "Languages" },
+    { type: "volunteering", label: "Volunteering" },
+    { type: "conferences", label: "Conferences" },
+    { type: "publications", label: "Publications" },
+    { type: "hobbies", label: "Hobbies" },
+    { type: "interests", label: "Interests" },
+    { type: "references", label: "References" },
+    { type: "research", label: "Research" },
+    { type: "training", label: "Training" },
+    { type: "extracurricular", label: "Extracurricular Activities" },
+    { type: "additional_experience", label: "Additional Experience" },
+    { type: "affiliations", label: "Affiliations" },
+    { type: "patents", label: "Patents" },
+    { type: "custom", label: "Custom Section" },
+  ];
+
+  const addSection = (type, label) => {
+    let finalLabel = label;
+    if (type === "custom") {
+      const customTitle = window.prompt("Enter a title for your custom section:", "Achievements");
+      if (!customTitle) return;
+      finalLabel = customTitle;
+    }
+    
+    // Check if section type already exists (except custom section which can be multiple!)
+    if (type !== "custom" && sections.some(s => s.type === type)) {
+      toast.error(`"${label}" section is already added.`);
+      return;
+    }
+
+    const newSec = {
+      id: type === "custom" ? `custom_${Date.now()}` : type,
+      type,
+      title: finalLabel,
+      data: (type === "summary") ? "" : [],
+      order: sections.length,
+      visible: true
+    };
+
+    const newSections = [...sections, newSec];
+    onChange({ ...data, sections: newSections });
+    toast.success(`Added "${finalLabel}" section!`);
+  };
+
+  const removeSection = (id, title) => {
+    if (["summary", "skills", "experience", "education", "projects"].includes(id)) {
+      toast.error("Core sections cannot be deleted, but you can hide them instead.");
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to permanently delete the "${title}" section?`)) {
+      return;
+    }
+    const newSections = sections.filter(s => s.id !== id).map((s, idx) => ({ ...s, order: idx }));
+    onChange({ ...data, sections: newSections });
+    toast.success(`Removed "${title}" section.`);
+  };
+
+  const toggleVisibility = (id) => {
+    const newSections = sections.map(s => {
+      if (s.id === id) return { ...s, visible: !s.visible };
+      return s;
+    });
+    onChange({ ...data, sections: newSections });
+  };
+
+  const moveSection = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= sections.length) return;
+    
+    const copy = [...sections];
+    const temp = copy[index];
+    copy[index] = copy[targetIndex];
+    copy[targetIndex] = temp;
+    
+    // Reset order properties
+    const reordered = copy.map((s, idx) => ({ ...s, order: idx }));
+    onChange({ ...data, sections: reordered });
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <div>
+        <h2 className="text-xl font-bold text-gray-900">Manage Resume Sections</h2>
+        <p className="text-sm text-gray-500 mt-0.5">Add, reorder, show/hide, or delete sections of your resume</p>
+      </div>
+
+      {/* Active sections list */}
+      <div className="space-y-2 border-b border-gray-100 pb-5">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Active Sections Layout</h3>
+        {sections.map((s, idx) => {
+          const isCore = ["summary", "skills", "experience", "education", "projects"].includes(s.id);
+          return (
+            <div key={s.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all
+              ${s.visible ? "bg-white border-gray-150 shadow-card" : "bg-gray-50 border-gray-100 opacity-60"}`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold text-gray-400 w-5">#{idx + 1}</span>
+                <div>
+                  <span className="text-xs font-extrabold text-gray-805">{s.title}</span>
+                  <span className="block text-[9px] text-gray-405 uppercase tracking-wider">{s.type}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                {/* Move buttons */}
+                <button 
+                  type="button"
+                  disabled={idx === 0} 
+                  onClick={() => moveSection(idx, -1)}
+                  className="btn btn-xs btn-ghost btn-circle disabled:opacity-20"
+                  title="Move Up"
+                >
+                  ▲
+                </button>
+                <button 
+                  type="button"
+                  disabled={idx === sections.length - 1} 
+                  onClick={() => moveSection(idx, 1)}
+                  className="btn btn-xs btn-ghost btn-circle disabled:opacity-20"
+                  title="Move Down"
+                >
+                  ▼
+                </button>
+                
+                {/* Hide/Show Toggle */}
+                <button 
+                  type="button"
+                  onClick={() => toggleVisibility(s.id)}
+                  className="btn btn-xs btn-ghost btn-circle text-gray-500 hover:text-indigo-650"
+                  title={s.visible ? "Hide Section" : "Show Section"}
+                >
+                  {s.visible ? "👁️" : "🙈"}
+                </button>
+
+                {/* Delete button (only optional sections) */}
+                <button 
+                  type="button"
+                  disabled={isCore}
+                  onClick={() => removeSection(s.id, s.title)}
+                  className="btn btn-xs btn-ghost btn-circle text-gray-400 hover:text-red-500 disabled:opacity-10"
+                  title="Delete Section"
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Available sections to add */}
+      <div className="space-y-3">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Add Optional Sections</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {OPTIONAL_SECTIONS.map(opt => {
+            const alreadyAdded = opt.type !== "custom" && sections.some(s => s.type === opt.type);
+            return (
+              <button
+                key={opt.type}
+                type="button"
+                disabled={alreadyAdded}
+                onClick={() => addSection(opt.type, opt.label)}
+                className={`btn btn-xs text-[10px] py-2 h-auto text-left justify-start rounded-lg border font-semibold transition-all
+                  ${alreadyAdded 
+                    ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed" 
+                    : "bg-white hover:bg-indigo-50/50 text-gray-700 border-gray-200 hover:border-indigo-200 active:scale-95"}`}
+              >
+                + {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Main component ────────────────────────────────────────────────────────────
 const GenerateResume = () => {
   const navigate = useNavigate();
@@ -1426,12 +2143,19 @@ const GenerateResume = () => {
   }, [resumeId, modeParam, resumeData]);
 
   const initialDraft = useMemo(() => {
-    if (resumeId) return resumeData || EMPTY;
-    if (modeParam === "scratch") return EMPTY;
-    return resumeData || EMPTY;
+    const raw = resumeId ? resumeData || EMPTY : (modeParam === "scratch" ? EMPTY : resumeData || EMPTY);
+    return normalizeResumeData(raw);
   }, [resumeId, modeParam, resumeData]);
 
-  const [draft, setDraft] = useState(initialDraft);
+  const [draft, setDraftReal] = useState(initialDraft);
+  
+  const setDraft = (val) => {
+    setDraftReal(prev => {
+      const next = typeof val === "function" ? val(prev) : val;
+      return syncResumeData(next);
+    });
+  };
+
   const [atsContext, setAtsContext] = useState(null);
   const [showPreview, setShowPreview] = useState(false); // mobile toggle
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false); // mobile overlay
@@ -1442,13 +2166,55 @@ const GenerateResume = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Dynamic steps config driven by draft.sections
+  const steps = useMemo(() => {
+    const list = [
+      { id: "basics", label: "Personal Info", icon: FaUser, desc: "Name, contact, links" },
+      { id: "manage_sections", label: "Manage Sections", icon: FaMagic, desc: "Add & reorder sections" }
+    ];
+    
+    const sections = Array.isArray(draft.sections) ? draft.sections : [];
+    sections.forEach(sec => {
+      let Icon = FaFileAlt;
+      if (sec.type === "summary") Icon = FaFileAlt;
+      else if (sec.type === "skills") Icon = FaCode;
+      else if (sec.type === "experience") Icon = FaBriefcase;
+      else if (sec.type === "education") Icon = FaGraduationCap;
+      else if (sec.type === "projects") Icon = FaFolderOpen;
+      else if (sec.type === "certifications") Icon = FaCrown;
+      else if (sec.type === "courses") Icon = FaGraduationCap;
+      else if (sec.type === "languages") Icon = FaBrain;
+      else if (sec.type === "volunteering") Icon = FaBriefcase;
+      else if (sec.type === "interests" || sec.type === "hobbies") Icon = FaLightbulb;
+      
+      list.push({
+        id: sec.id,
+        type: sec.type,
+        label: sec.title,
+        icon: Icon,
+        desc: `Manage ${sec.title.toLowerCase()}`,
+        section: sec
+      });
+    });
+    
+    return list;
+  }, [draft.sections]);
+
+  // Clamp step if dynamic sections list shrinks
+  useEffect(() => {
+    if (step >= steps.length) {
+      setStep(Math.max(0, steps.length - 1));
+    }
+  }, [steps, step]);
+
   // Handle URL modeParam / templateParam onboarding
   useEffect(() => {
     if (!resumeId) {
       if (modeParam === "scratch") {
         clearResumeData();
-        setDraft(EMPTY);
-        updateResumeData(EMPTY);
+        const initialEmpty = normalizeResumeData(EMPTY);
+        setDraft(initialEmpty);
+        updateResumeData(initialEmpty);
       }
     }
     if (templateParam) {
@@ -1456,10 +2222,16 @@ const GenerateResume = () => {
     }
   }, [resumeId, modeParam, templateParam]);
 
+  // Sync draft -> context on every change (debounced via useEffect)
+  useEffect(() => {
+    const t = setTimeout(() => updateResumeData(draft), 400);
+    return () => clearTimeout(t);
+  }, [draft]);
+
   // Sync context changes to draft (e.g. on loading from backend)
   useEffect(() => {
     if (resumeData && resumeId) {
-      setDraft(resumeData);
+      setDraft(normalizeResumeData(resumeData));
     }
   }, [resumeData, resumeId]);
 
@@ -1472,9 +2244,10 @@ const GenerateResume = () => {
           const content = res.currentStatus === "ORIGINAL" 
             ? JSON.parse(res.originalJson || "{}") 
             : JSON.parse(res.improvedJson || "{}");
-          updateResumeData(content);
+          const normalized = normalizeResumeData(content);
+          updateResumeData(normalized);
           updateTemplate(res.selectedTemplate || "default");
-          setDraft(content);
+          setDraft(normalized);
           setShowAiPrompt(false);
         } catch (e) {
           toast.error("Failed to load resume: " + (e.response?.data?.error || e.message));
@@ -1539,12 +2312,6 @@ const GenerateResume = () => {
     }
   };
 
-  // Sync draft → context on every change (debounced via useEffect)
-  useEffect(() => {
-    const t = setTimeout(() => updateResumeData(draft), 400);
-    return () => clearTimeout(t);
-  }, [draft]);
-
   const triggerPrint = useReactToPrint({ content: () => printRef.current });
 
   const handlePrintClick = async () => {
@@ -1586,18 +2353,8 @@ const GenerateResume = () => {
     try {
       const res = await generateResume(aiPrompt);
       if (!res?.data) throw new Error("Invalid response");
-      const d = res.data;
-      setDraft({
-        personalInformation: { fullName: d.personalInformation?.fullName || "", email: d.personalInformation?.email || "", phoneNumber: d.personalInformation?.phoneNumber || "", location: d.personalInformation?.location || "", linkedIn: d.personalInformation?.linkedIn || "", gitHub: d.personalInformation?.gitHub || "", portfolio: d.personalInformation?.portfolio || "" },
-        summary: d.summary || "",
-        skills: d.skills || [],
-        experience: d.experience || [],
-        education: d.education || [],
-        projects: d.projects || [],
-        certifications: d.certifications || [],
-        languages: d.languages || [],
-        interests: d.interests || [],
-      });
+      const normalized = normalizeResumeData(res.data);
+      setDraft(normalized);
       toast.success("Resume generated!", { id: tid });
       setShowAiPrompt(false);
     } catch (e) {
@@ -1621,7 +2378,8 @@ const GenerateResume = () => {
     try {
       const res = await enhanceResume(draft);
       if (res?.data) { 
-        setDraft(prev => ({ ...prev, ...res.data })); 
+        const normalized = normalizeResumeData({ ...draft, ...res.data });
+        setDraft(normalized); 
         toast.success("Resume enhanced!", { id: tid }); 
         refreshUser();
       }
@@ -1631,17 +2389,81 @@ const GenerateResume = () => {
     } finally { setAiLoading(false); }
   };
 
-  const currentStepId = STEPS[step].id;
+  const currentStepId = steps[step]?.id;
 
   const renderStep = () => {
-    switch (currentStepId) {
-      case "basics":     return <StepBasics data={draft} onChange={setDraft} />;
-      case "summary":    return <StepSummary data={draft} onChange={setDraft} user={user} setShowUpgradeModal={setShowUpgradeModal} refreshUser={refreshUser} />;
-      case "skills":     return <StepSkills data={draft} onChange={setDraft} />;
-      case "experience": return <StepExperience data={draft} onChange={setDraft} user={user} setShowUpgradeModal={setShowUpgradeModal} refreshUser={refreshUser} />;
-      case "education":  return <StepEducation data={draft} onChange={setDraft} />;
-      case "projects":   return <StepProjects data={draft} onChange={setDraft} user={user} setShowUpgradeModal={setShowUpgradeModal} refreshUser={refreshUser} />;
-      default: return null;
+    const activeStep = steps[step];
+    if (!activeStep) return null;
+
+    switch (activeStep.id) {
+      case "basics":
+        return <StepBasics data={draft} onChange={setDraft} />;
+      case "manage_sections":
+        return <StepManageSections data={draft} onChange={setDraft} />;
+      default:
+        // This is a section from draft.sections
+        const secId = activeStep.id;
+        const secIdx = draft.sections.findIndex(s => s.id === secId);
+        if (secIdx === -1) return null;
+        const sec = draft.sections[secIdx];
+        
+        if (sec.type === "summary") {
+          return (
+            <StepSummary 
+              data={draft} 
+              onChange={setDraft} 
+              user={user} 
+              setShowUpgradeModal={setShowUpgradeModal} 
+              refreshUser={refreshUser} 
+            />
+          );
+        } else if (sec.type === "skills") {
+          return (
+            <StepSkills 
+              data={draft} 
+              onChange={setDraft} 
+              atsContext={atsContext} 
+            />
+          );
+        } else if (sec.type === "experience") {
+          return (
+            <StepExperience 
+              data={draft} 
+              onChange={setDraft} 
+              user={user} 
+              setShowUpgradeModal={setShowUpgradeModal} 
+              refreshUser={refreshUser} 
+            />
+          );
+        } else if (sec.type === "education") {
+          return (
+            <StepEducation 
+              data={draft} 
+              onChange={setDraft} 
+            />
+          );
+        } else if (sec.type === "projects") {
+          return (
+            <StepProjects 
+              data={draft} 
+              onChange={setDraft} 
+              user={user} 
+              setShowUpgradeModal={setShowUpgradeModal} 
+              refreshUser={refreshUser} 
+            />
+          );
+        } else {
+          return (
+            <StepGenericSection 
+              section={sec} 
+              onChange={(updatedData) => {
+                const updatedSections = [...draft.sections];
+                updatedSections[secIdx] = { ...sec, data: updatedData };
+                setDraft({ ...draft, sections: updatedSections });
+              }}
+            />
+          );
+        }
     }
   };
 
@@ -1658,7 +2480,7 @@ const GenerateResume = () => {
               <FaBrain className="text-white text-2xl" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Build Your Resume</h1>
-            <p className="text-gray-500 text-sm">Let AI generate a professional draft in seconds, or build manually</p>
+            <p className="text-gray-555 text-sm">Let AI generate a professional draft in seconds, or build manually</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-card border border-gray-100 p-8">
@@ -1678,7 +2500,7 @@ const GenerateResume = () => {
             </button>
             <div className="flex items-center gap-3 my-5">
               <div className="flex-1 h-px bg-gray-100" />
-              <span className="text-xs text-gray-400">or</span>
+              <span className="text-xs text-gray-405">or</span>
               <div className="flex-1 h-px bg-gray-100" />
             </div>
             <button onClick={() => setShowAiPrompt(false)}
@@ -1712,7 +2534,7 @@ const GenerateResume = () => {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={handleEnhanceAll} disabled={aiLoading}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-indigo-650 bg-indigo-50 hover:bg-indigo-100 transition-all disabled:opacity-50">
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-indigo-650 bg-indigo-55 hover:bg-indigo-100 transition-all disabled:opacity-50">
             {aiLoading ? <FaSpinner className="animate-spin" size={11} /> : <FaMagic size={11} />}
             Enhance All
           </button>
@@ -1749,7 +2571,7 @@ const GenerateResume = () => {
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Sections</p>
           </div>
           <nav className="flex-1 px-3 pb-3 space-y-0.5">
-            {STEPS.map((s, i) => {
+            {steps.map((s, i) => {
               const Icon = s.icon;
               const active = i === step;
               const done = i < step;
@@ -1789,8 +2611,8 @@ const GenerateResume = () => {
               className="btn-ghost-light flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed">
               <FaChevronLeft size={11} /> Back
             </button>
-            <span className="text-xs text-gray-300 font-mono">{step + 1} / {STEPS.length}</span>
-            {step < STEPS.length - 1 ? (
+            <span className="text-xs text-gray-300 font-mono">{step + 1} / {steps.length}</span>
+            {step < steps.length - 1 ? (
               <button onClick={() => setStep(s => s + 1)} className="btn-brand flex items-center gap-1.5 text-sm px-4 py-2">
                 Next <FaChevronRight size={11} />
               </button>
@@ -1825,7 +2647,7 @@ const GenerateResume = () => {
       </div>
 
       {/* Collapsible Sliding ATS Drawer */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-80 max-w-[90vw] bg-white dark:bg-slate-900 shadow-2xl border-l border-gray-200 dark:border-slate-805 flex flex-col transition-all duration-300 ease-in-out transform
+      <div className={`fixed inset-y-0 right-0 z-50 w-80 max-w-[90vw] bg-white dark:bg-slate-900 shadow-2xl border-l border-gray-200 dark:border-slate-855 flex flex-col transition-all duration-300 ease-in-out transform
         ${showAtsDrawer ? "translate-x-0" : "translate-x-full"}`}>
         
         {/* Drawer Header */}
@@ -1850,6 +2672,7 @@ const GenerateResume = () => {
             strength={strength} 
             setDraft={setDraft} 
             setStep={setStep} 
+            steps={steps}
           />
         </div>
       </div>
@@ -1864,8 +2687,7 @@ const GenerateResume = () => {
 
       {/* Mobile Floating Action Button */}
       <div className="lg:hidden fixed bottom-6 right-6 z-40">
-        <button
-          onClick={() => setMobilePreviewOpen(true)}
+        <button         onClick={() => setMobilePreviewOpen(true)}
           className="btn btn-primary shadow-2xl flex items-center gap-2 rounded-full px-5 py-3 h-auto"
         >
           <FaEye /> Preview Resume

@@ -5,22 +5,15 @@ import { useAuth } from "../context/AuthContext";
 import { trackExport } from "../api/ResumeService";
 import UpgradeModal from "./UpgradeModal";
 import toast from "react-hot-toast";
-import DefaultTemplate from "./Templates/DefaultTemplate";
-import ModernTemplate from "./Templates/ModernTemplate";
-import MinimalistTemplate from "./Templates/MinimalistTemplate";
+import DynamicTemplate from "../templates/DynamicTemplate";
+import { getTemplate, TEMPLATES } from "../templates/templateConfig";
 
 const Resume = ({ data, selectedTemplate: propSelectedTemplate, showTemplateSelector = false }) => {
   const resumeRef = useRef(null);
-  const { selectedTemplate: contextTemplate, updateTemplate } = useResume();
+  const { selectedTemplate: contextTemplate, updateTemplate, selectedTheme, selectedFont } = useResume();
   const { user, refreshUser } = useAuth();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const currentTemplate = propSelectedTemplate || contextTemplate;
-
-  const templates = [
-    { id: "default", name: "Default" },
-    { id: "modern", name: "Modern" },
-    { id: "minimalist", name: "Minimalist" },
-  ];
 
   // Text-based print/PDF — preserves selectable text, ATS-friendly
   const triggerPrint = useReactToPrint({ content: () => resumeRef.current });
@@ -53,11 +46,13 @@ const Resume = ({ data, selectedTemplate: propSelectedTemplate, showTemplateSele
   };
 
   const renderTemplate = () => {
-    switch (currentTemplate) {
-      case "modern":     return <ModernTemplate data={data} />;
-      case "minimalist": return <MinimalistTemplate data={data} />;
-      default:           return <DefaultTemplate data={data} />;
-    }
+    const baseConfig = getTemplate(currentTemplate);
+    const config = {
+      ...baseConfig,
+      theme: selectedTheme || "slate",
+      font: selectedFont || "inter"
+    };
+    return <DynamicTemplate data={data} config={config} />;
   };
 
   return (
@@ -66,9 +61,9 @@ const Resume = ({ data, selectedTemplate: propSelectedTemplate, showTemplateSele
 
       {showTemplateSelector && (
         <div className="bg-base-200 p-4 rounded-lg">
-          <h3 className="text-sm font-semibold mb-2 text-base-content/70">Template</h3>
+          <h3 className="text-sm font-semibold mb-2 text-base-content/70">Template Layout Design</h3>
           <div className="flex flex-wrap gap-2">
-            {templates.map(t => (
+            {TEMPLATES.map(t => (
               <button key={t.id} onClick={() => updateTemplate(t.id)}
                 className={`btn btn-sm ${currentTemplate === t.id ? "btn-primary" : "btn-outline btn-primary"}`}>
                 {t.name}
@@ -84,8 +79,8 @@ const Resume = ({ data, selectedTemplate: propSelectedTemplate, showTemplateSele
         </button>
       </div>
 
-      <div ref={resumeRef} className="bg-white shadow-lg mx-auto"
-        style={{ width: "794px", minHeight: "1123px", maxWidth: "100%" }}>
+      <div ref={resumeRef} className="bg-white shadow-lg mx-auto overflow-hidden"
+        style={{ width: "595px", minHeight: "842px", maxWidth: "100%" }}>
         {renderTemplate()}
       </div>
     </div>
