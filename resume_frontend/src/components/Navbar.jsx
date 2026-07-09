@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import { FaUser, FaCrown, FaBars, FaTimes } from "react-icons/fa";
@@ -10,6 +10,8 @@ const AuthModal = ({ mode, onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [currentMode, setCurrentMode] = useState(mode);
+  const [unverifiedEmailError, setUnverifiedEmailError] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,10 +20,20 @@ const AuthModal = ({ mode, onClose }) => {
     const fn = currentMode === "login" ? login : register;
     const result = await fn(email, password);
     if (result.success) {
-      toast.success(currentMode === "login" ? "Welcome back!" : "Account created!");
-      onClose();
+      if (currentMode === "register") {
+        toast.success("Registration successful! Check your email.");
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        onClose();
+      } else {
+        toast.success("Welcome back!");
+        onClose();
+      }
     } else {
-      toast.error(result.error);
+      if (currentMode === "login" && result.error === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmailError(true);
+      } else {
+        toast.error(result.error);
+      }
     }
   };
 
@@ -45,13 +57,46 @@ const AuthModal = ({ mode, onClose }) => {
               ? "Sign in to access your resumes and Pro features"
               : "Free account — 2 ATS scans included"}
           </p>
+
+          {unverifiedEmailError && (
+            <div className="bg-[#E85D4E]/10 border border-[#E85D4E]/20 text-[#E85D4E] rounded-[8px] p-3 text-xs font-sans mb-4 flex justify-between items-center">
+              <span>Your email is not verified.</span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+                  onClose();
+                }}
+                className="text-[#DB9A3C] font-semibold hover:underline bg-transparent border-0 cursor-pointer"
+              >
+                Verify Now
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-3 font-sans">
             <input type="email" placeholder="Email address" value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => { setEmail(e.target.value); setUnverifiedEmailError(false); }}
               className="w-full text-sm bg-white border border-[#DDD5C4] rounded-[8px] p-2.5 outline-none focus:border-[#DB9A3C] text-[#1B2A4A] font-sans" required />
             <input type="password" placeholder="Password" value={password}
               onChange={e => setPassword(e.target.value)}
               className="w-full text-sm bg-white border border-[#DDD5C4] rounded-[8px] p-2.5 outline-none focus:border-[#DB9A3C] text-[#1B2A4A] font-sans" required minLength={6} />
+            
+            {currentMode === "login" && (
+              <div className="text-right mt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate("/forgot-password");
+                    onClose();
+                  }}
+                  className="text-xs text-[#DB9A3C] hover:underline bg-transparent border-0 cursor-pointer font-sans"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
+
             <button type="submit" disabled={isLoading} className="w-full bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-sm rounded-[6px] py-3 transition-all font-sans border-0 flex items-center justify-center gap-2 mt-2 cursor-pointer">
               {isLoading && <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
               {currentMode === "login" ? "Sign In" : "Create Account"}
@@ -65,7 +110,7 @@ const AuthModal = ({ mode, onClose }) => {
           <p className="text-center text-sm text-[#5A5347] font-sans">
             {currentMode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button className="text-[#DB9A3C] font-semibold hover:underline bg-transparent border-0 cursor-pointer"
-              onClick={() => setCurrentMode(currentMode === "login" ? "register" : "login")}>
+              onClick={() => { setCurrentMode(currentMode === "login" ? "register" : "login"); setUnverifiedEmailError(false); }}>
               {currentMode === "login" ? "Sign up" : "Sign in"}
             </button>
           </p>
@@ -82,6 +127,14 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("login") === "true") {
+      setAuthModal("login");
+      navigate(window.location.pathname, { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   const handleLogout = () => {
     logout();
