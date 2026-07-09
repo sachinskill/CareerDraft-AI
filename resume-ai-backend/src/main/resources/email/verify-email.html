@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Verify Your Email - CareerDraft AI</title>
+  <style>
+    body {
+      background-color: #F4F0E8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #F4F0E8;
+      padding: 40px 0;
+    }
+    .container {
+      max-width: 540px;
+      margin: 0 auto;
+      background-color: #FDFBF7;
+      border: 1px solid #DDD5C4;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: left;
+    }
+    .logo {
+      display: inline-block;
+      background-color: #1B2A4A;
+      color: #FDFBF7;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1B2A4A;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+    p {
+      font-size: 14px;
+      color: #5A5347;
+      line-height: 1.6;
+      margin-top: 0;
+      margin-bottom: 24px;
+    }
+    .otp-card {
+      background-color: #F4F0E8;
+      border: 1px solid #DDD5C4;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .otp-code {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 6px;
+      color: #1B2A4A;
+      margin: 0;
+    }
+    .footer {
+      border-top: 1px solid #DDD5C4;
+      padding-top: 20px;
+      font-size: 11px;
+      color: #5A5347;
+      opacity: 0.8;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="logo">CareerDraft AI</div>
+      <h1>Verify your email address</h1>
+      <p>Thank you for signing up for CareerDraft AI. Please use the following one-time verification code to verify your account. This code is valid for 10 minutes.</p>
+      <div class="otp-card">
+        <div class="otp-code">{{OTP}}</div>
+      </div>
+      <p>If you did not request this code, you can safely ignore this email.</p>
+      <div class="footer">
+        This is an automated security transmission from CareerDraft AI.<br>
+        © 2026 CareerDraft AI. All rights reserved.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

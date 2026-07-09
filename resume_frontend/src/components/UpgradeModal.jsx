@@ -55,7 +55,7 @@ const UpgradeModal = ({ isOpen, onClose, customTitle, customSubtitle }) => {
           name: user?.email ? user.email.split("@")[0] : "",
         },
         theme: {
-          color: "#4f46e5", // Indigo-600 matching brand guidelines
+          color: "#E8A33D", // Amber matching brand design tokens
         },
         modal: {
           ondismiss: () => setIsProcessingPayment(false),
@@ -75,76 +75,77 @@ const UpgradeModal = ({ isOpen, onClose, customTitle, customSubtitle }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1B2A4A]/50 backdrop-blur-sm animate-fadeIn">
+      <div className="relative w-full max-w-lg overflow-hidden bg-[#FFFFFF] border border-[#D3D1C7] rounded-[12px] shadow-none">
         
-        {/* Header background gradient blob */}
-        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-90" />
-        
-        {/* Close Button */}
-        <button 
-          onClick={onClose} 
-          disabled={isProcessingPayment}
-          className="absolute right-4 top-4 z-10 flex items-center justify-center w-8 h-8 text-white hover:bg-white/20 rounded-full transition-all duration-150"
-        >
-          <FaTimes size={16} />
-        </button>
+        {/* Header area */}
+        <div className="bg-[#EDEFF2] border-b border-[#D3D1C7] p-6 text-center relative">
+          {/* Close Button */}
+          <button 
+            onClick={onClose} 
+            disabled={isProcessingPayment}
+            className="absolute right-4 top-4 text-[#4A5568] hover:text-[#1B2A4A] transition-colors"
+          >
+            <FaTimes size={16} />
+          </button>
 
-        <div className="relative px-6 pt-16 pb-8 text-center">
-          {/* Badge icon */}
-          <div className="mx-auto flex items-center justify-center w-16 h-16 bg-white dark:bg-slate-900 border-4 border-indigo-400 rounded-full shadow-lg -mt-10">
-            <FaCrown className="text-amber-500 text-2xl animate-pulse" />
+          {/* Flat Amber Crown Icon */}
+          <div className="mx-auto flex items-center justify-center mb-2">
+            <FaCrown className="text-[#E8A33D] text-3xl" />
           </div>
-          <h2 className="mt-4 text-2xl md:text-3xl font-black text-white px-2 tracking-tight leading-tight">
+          
+          <h2 className="text-xl md:text-2xl font-semibold text-[#1B2A4A] font-space tracking-tight">
             {customTitle || "Upgrade to Pro"}
           </h2>
-          <p className="mt-2 text-indigo-100 text-xs md:text-sm font-semibold opacity-90 max-w-sm mx-auto">
+          <p className="mt-1 text-[#4A5568] text-xs md:text-sm font-sans max-w-sm mx-auto">
             {customSubtitle || "Unlock recruiter-grade optimization tools and stand out."}
           </p>
-          
+        </div>
+
+        <div className="p-6 text-center bg-[#FFFFFF]">
           {/* Pricing Plan details */}
-          <div className="mt-8 bg-slate-50/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-3xl p-6 text-left border border-slate-100 dark:border-slate-800/80 hover:shadow-md transition-all duration-300">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-200/50 dark:border-slate-700/50">
+          <div className="bg-[#EDEFF2]/40 border border-[#D3D1C7] rounded-[8px] p-5 text-left">
+            <div className="flex justify-between items-center mb-4 pb-4 border-b border-[#D3D1C7]">
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Lifetime Pro Access</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Zero subscriptions. Pay once, use forever.</p>
+                <h3 className="font-semibold text-[#1B2A4A] font-space text-base">Lifetime Pro Access</h3>
+                <p className="text-xs text-[#4A5568] font-sans">Zero subscriptions. Pay once, use forever.</p>
               </div>
               <div className="text-right">
-                <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">₹49</span>
-                <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">one-time</span>
+                <span className="text-2xl font-bold font-mono-score text-[#1B2A4A]">₹49</span>
+                <span className="text-[10px] text-[#4A5568] block font-sans font-semibold uppercase tracking-wider">one-time</span>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <FaCheckCircle className="text-emerald-500 mt-1 shrink-0" />
+                <FaCheckCircle className="text-[#3F9F6B] mt-1 shrink-0 text-sm" />
                 <div>
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Unlimited ATS Scans</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Scan and align unlimited resumes against target descriptions to bypass automatic filters.</p>
+                  <h4 className="font-semibold text-[#1B2A4A] font-space text-sm">Unlimited ATS Scans</h4>
+                  <p className="text-xs text-[#4A5568] font-sans">Scan and align unlimited resumes against target descriptions to bypass automatic filters.</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <FaRocket className="text-indigo-500 mt-1 shrink-0" />
+                <FaCheckCircle className="text-[#3F9F6B] mt-1 shrink-0 text-sm" />
                 <div>
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Priority AI Enhancements</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Instant AI optimizations for experience metrics, action verbs, and keyword density.</p>
+                  <h4 className="font-semibold text-[#1B2A4A] font-space text-sm">Priority AI Enhancements</h4>
+                  <p className="text-xs text-[#4A5568] font-sans">Instant AI optimizations for experience metrics, action verbs, and keyword density.</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <FaHistory className="text-purple-500 mt-1 shrink-0" />
+                <FaCheckCircle className="text-[#3F9F6B] mt-1 shrink-0 text-sm" />
                 <div>
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Resume Version Rollback</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Compare and restore historical drafts seamlessly as you tailor your resume for different roles.</p>
+                  <h4 className="font-semibold text-[#1B2A4A] font-space text-sm">Resume Version Rollback</h4>
+                  <p className="text-xs text-[#4A5568] font-sans">Compare and restore historical drafts seamlessly as you tailor your resume for different roles.</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <FaFileAlt className="text-pink-500 mt-1 shrink-0" />
+                <FaCheckCircle className="text-[#3F9F6B] mt-1 shrink-0 text-sm" />
                 <div>
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Premium Templates & PDFs</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Access all layout templates, visual themes, fonts, and enjoy high-speed PDF downloads.</p>
+                  <h4 className="font-semibold text-[#1B2A4A] font-space text-sm">Premium Templates & PDFs</h4>
+                  <p className="text-xs text-[#4A5568] font-sans">Access all layout templates, visual themes, fonts, and enjoy high-speed PDF downloads.</p>
                 </div>
               </div>
             </div>
@@ -153,7 +154,7 @@ const UpgradeModal = ({ isOpen, onClose, customTitle, customSubtitle }) => {
           <button
             onClick={handleUpgradePayment}
             disabled={isProcessingPayment}
-            className="w-full mt-6 btn-brand py-3.5 flex items-center justify-center gap-2 font-bold text-base"
+            className="w-full mt-5 bg-[#E8A33D] hover:bg-[#d69430] active:scale-95 text-[#1B2A4A] font-semibold text-sm rounded-[8px] py-3.5 transition-all font-sans border-0 flex items-center justify-center gap-2"
           >
             <FaCrown />
             {isProcessingPayment ? "Redirecting to Payment..." : "Upgrade Now — ₹49"}
@@ -162,7 +163,7 @@ const UpgradeModal = ({ isOpen, onClose, customTitle, customSubtitle }) => {
           <button 
             onClick={onClose} 
             disabled={isProcessingPayment}
-            className="mt-3 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium transition-colors"
+            className="mt-3 text-sm text-[#4A5568] hover:text-[#1B2A4A] font-medium transition-colors font-sans"
           >
             Maybe Later
           </button>

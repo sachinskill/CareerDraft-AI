@@ -29,7 +29,8 @@ public class ResumeAiBackendApplication {
             "SERVER_PORT", "DB_URL", "DB_USERNAME", "DB_PASSWORD",
             "AI_MODE", "GROQ_API_KEY", "GROQ_MODEL",
             "JWT_SECRET", "RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET",
-            "ATS_PYTHON_URL", "COOKIE_SECURE", "COOKIE_DOMAIN", "CORS_ALLOWED_ORIGINS"
+            "ATS_PYTHON_URL", "COOKIE_SECURE", "COOKIE_DOMAIN", "CORS_ALLOWED_ORIGINS",
+            "RESEND_API_KEY", "RESEND_FROM_EMAIL", "FRONTEND_URL"
     );
 
     static {
@@ -50,43 +51,39 @@ public class ResumeAiBackendApplication {
                     .ignoreIfMalformed()
                     .load();
 
-            int loaded = 0;
-            // Only inject keys that are explicitly defined in ENV_FILE_KEYS.
-            // This prevents OS environment variables (like DB_USERNAME=postgres.xxx)
-            // from being re-injected and overwriting the correct .env values.
-            for (String key : ENV_FILE_KEYS) {
-                String value = dotenv.get(key, null);
-                if (value != null) {
-                    // Sanitize: strip surrounding quotes and whitespace
-                    String cleanValue = value.trim()
-                            .replaceAll("^\"|\"$", "")
-                            .replaceAll("^'|'$", "")
-                            .trim();
+            java.util.List<String> loadedKeys = new java.util.ArrayList<>();
+            // Retrieve only the values declared in the local .env file (if it exists).
+            // dotenv.entries() returns entries loaded specifically from the .env file.
+            // If the file is missing (e.g. in production), entries() will be empty.
+            for (io.github.cdimascio.dotenv.DotenvEntry entry : dotenv.entries(io.github.cdimascio.dotenv.Dotenv.Filter.DECLARED_IN_ENV_FILE)) {
+                String key = entry.getKey();
+                if (ENV_FILE_KEYS.contains(key)) {
+                    String value = entry.getValue();
+                    if (value != null) {
+                        String cleanValue = value.trim()
+                                .replaceAll("^\"|\"$", "")
+                                .replaceAll("^'|'$", "")
+                                .trim();
 
-                    System.setProperty(key, cleanValue);
-                    loaded++;
-
-                    // Log with masking for sensitive values
-                    boolean sensitive = key.contains("KEY") || key.contains("SECRET") || key.contains("PASSWORD");
-                    String display = sensitive
-                            ? cleanValue.substring(0, Math.min(10, cleanValue.length())) + "..."
-                            : cleanValue;
-                    logger.info("  .env → System.setProperty({}) = {}", key, display);
+                        System.setProperty(key, cleanValue);
+                        loadedKeys.add(key);
+                    }
                 }
             }
 
-            logger.info(".env loaded: {} variables injected", loaded);
+            java.util.Collections.sort(loadedKeys);
+            logger.info(".env loaded: {} variables {}", loadedKeys.size(), loadedKeys);
 
             // Verify the critical ones
             String aiMode = System.getProperty("AI_MODE");
             String groqKey = System.getProperty("GROQ_API_KEY");
             String dbUser  = System.getProperty("DB_USERNAME");
             logger.info("AI mode: {}", aiMode != null ? aiMode : "NOT SET");
-            logger.info("DB_USERNAME: {}", dbUser);
+            logger.info("DB_USERNAME: {}", dbUser != null ? dbUser : "NOT SET");
             logger.info("Groq API key: {}",
                     groqKey != null && !groqKey.isBlank()
-                            ? "YES [" + groqKey.substring(0, Math.min(15, groqKey.length())) + "...]"
-                            : "NO — AI will not work!");
+                            ? "PRESENT"
+                            : "NOT SET — AI will not work!");
 
         } catch (DotenvException e) {
             logger.warn("Could not load .env: {} — using OS environment variables", e.getMessage());

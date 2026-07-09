@@ -26,45 +26,45 @@ const AuthModal = ({ mode, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-gray-100 relative">
+    <div className="fixed inset-0 bg-[#1B2A4A]/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#FDFBF7] rounded-[12px] shadow-lg w-full max-w-sm border border-[#DDD5C4] relative text-left">
         <button onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors">
+          className="absolute right-4 top-4 text-[#5A5347] hover:text-[#1B2A4A] transition-colors bg-transparent border-0 cursor-pointer">
           <FaTimes size={14} />
         </button>
         <div className="p-8">
           {/* Brand mark */}
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-5">
+          <div className="w-10 h-10 rounded-[6px] bg-[#1B2A4A] flex items-center justify-center mb-5">
             <FaUser className="text-white text-sm" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+          <h2 className="text-2xl font-semibold text-[#1B2A4A] font-space mb-1">
             {currentMode === "login" ? "Welcome back" : "Create account"}
           </h2>
-          <p className="text-gray-500 text-sm mb-6">
+          <p className="text-[#5A5347] text-xs font-sans mb-6">
             {currentMode === "login"
               ? "Sign in to access your resumes and Pro features"
               : "Free account — 2 ATS scans included"}
           </p>
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 font-sans">
             <input type="email" placeholder="Email address" value={email}
               onChange={e => setEmail(e.target.value)}
-              className="input-light" required />
+              className="w-full text-sm bg-white border border-[#DDD5C4] rounded-[8px] p-2.5 outline-none focus:border-[#DB9A3C] text-[#1B2A4A] font-sans" required />
             <input type="password" placeholder="Password" value={password}
               onChange={e => setPassword(e.target.value)}
-              className="input-light" required minLength={6} />
-            <button type="submit" disabled={isLoading} className="btn-brand w-full flex items-center justify-center gap-2 mt-1">
+              className="w-full text-sm bg-white border border-[#DDD5C4] rounded-[8px] p-2.5 outline-none focus:border-[#DB9A3C] text-[#1B2A4A] font-sans" required minLength={6} />
+            <button type="submit" disabled={isLoading} className="w-full bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-sm rounded-[6px] py-3 transition-all font-sans border-0 flex items-center justify-center gap-2 mt-2 cursor-pointer">
               {isLoading && <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
               {currentMode === "login" ? "Sign In" : "Create Account"}
             </button>
           </form>
           <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-xs text-gray-400">or</span>
-            <div className="flex-1 h-px bg-gray-100" />
+            <div className="flex-1 h-px bg-[#DDD5C4]" />
+            <span className="text-xs text-[#5A5347] font-sans">or</span>
+            <div className="flex-1 h-px bg-[#DDD5C4]" />
           </div>
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-[#5A5347] font-sans">
             {currentMode === "login" ? "Don't have an account? " : "Already have an account? "}
-            <button className="text-indigo-600 font-semibold hover:underline"
+            <button className="text-[#DB9A3C] font-semibold hover:underline bg-transparent border-0 cursor-pointer"
               onClick={() => setCurrentMode(currentMode === "login" ? "register" : "login")}>
               {currentMode === "login" ? "Sign up" : "Sign in"}
             </button>
@@ -103,20 +103,20 @@ function Navbar() {
   return (
     <>
       {/* Main navbar */}
-      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <nav className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#DDD5C4] font-sans text-left">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <button className="lg:hidden btn-ghost-light p-2 rounded-lg"
+            <button className="lg:hidden p-2 rounded-lg text-[#1B2A4A] bg-transparent hover:bg-[#F4F0E8] border-0 cursor-pointer"
               onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
               {menuOpen ? <FaTimes size={16} /> : <FaBars size={16} />}
             </button>
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
-                <span className="text-white text-xs font-bold">AI</span>
+              <div className="w-8 h-8 rounded-[6px] bg-[#1B2A4A] flex items-center justify-center">
+                <span className="text-white text-xs font-bold font-mono">AI</span>
               </div>
-              <span className="font-bold text-gray-900 text-base hidden sm:block group-hover:text-indigo-600 transition-colors">
+              <span className="font-semibold text-[#1B2A4A] text-base hidden sm:block font-space">
                 Resume Maker
               </span>
             </Link>
@@ -126,42 +126,42 @@ function Navbar() {
           <div className="hidden lg:flex items-center gap-1">
             {navLinks.map(link => (
               <Link key={link.to} to={link.to}
-                className="px-3.5 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all">
+                className="px-3.5 py-2 text-sm font-medium text-[#1B2A4A]/80 hover:text-[#1B2A4A] transition-all font-sans">
                 {link.label}
               </Link>
             ))}
           </div>
 
           {/* Auth */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 font-sans">
             {isLoggedIn ? (
               <div className="relative">
                 <button onClick={() => setDropdownOpen(o => !o)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all text-sm">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-[6px] border border-[#DDD5C4] bg-[#FDFBF7] hover:bg-[#F4F0E8] transition-all text-sm font-sans cursor-pointer">
+                  <div className="w-6 h-6 rounded-full bg-[#1B2A4A] flex items-center justify-center">
                     <FaUser className="text-white text-xs" />
                   </div>
-                  <span className="hidden sm:block text-gray-700 font-medium max-w-[120px] truncate">
+                  <span className="hidden sm:block text-[#1B2A4A] font-semibold max-w-[120px] truncate">
                     {user?.email?.split("@")[0]}
                   </span>
-                  {(user?.isPro || user?.role === "ROLE_PRO") && <FaCrown className="text-amber-500 text-xs" />}
+                  {(user?.isPro || user?.role === "ROLE_PRO") && <FaCrown className="text-[#DB9A3C] text-xs" />}
                 </button>
                 {dropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 z-20 overflow-hidden">
-                      <div className="px-4 py-3 border-b border-gray-50">
-                        <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-[#FDFBF7] rounded-[8px] border border-[#DDD5C4] z-20 overflow-hidden font-sans shadow-md text-left">
+                      <div className="px-4 py-3 border-b border-[#DDD5C4]">
+                        <p className="text-xs text-[#5A5347] truncate">{user?.email}</p>
                         {user?.isPro || user?.role === "ROLE_PRO" ? (
-                          <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold text-[#1B2A4A] bg-[#F4F0E8] border border-[#DDD5C4] px-2 py-0.5 rounded-full">
                             <FaCrown size={9} /> Pro
                           </span>
                         ) : (
                           <div className="mt-1 flex items-center justify-between">
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-[#5A5347]">
                               Scans: {user?.scanCount || 0}/2
                             </span>
-                            <Link to="/billing" onClick={() => setDropdownOpen(false)} className="text-[10px] text-indigo-600 hover:underline font-bold">
+                            <Link to="/billing" onClick={() => setDropdownOpen(false)} className="text-[10px] text-[#DB9A3C] hover:underline font-bold">
                               Upgrade
                             </Link>
                           </div>
@@ -169,24 +169,24 @@ function Navbar() {
                       </div>
                       <div className="p-2">
                         <Link to="/dashboard" onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium">
+                          className="flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#1B2A4A] hover:bg-[#F4F0E8] transition-colors font-semibold">
                           Dashboard
                         </Link>
                         <Link to="/generate-resume" onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium">
+                          className="flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#1B2A4A] hover:bg-[#F4F0E8] transition-colors font-semibold">
                           Build Resume
                         </Link>
                         <Link to="/ats-analysis" onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium">
+                          className="flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#1B2A4A] hover:bg-[#F4F0E8] transition-colors font-semibold">
                           ATS Analysis
                         </Link>
                         <Link to="/billing" onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium">
+                          className="flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#1B2A4A] hover:bg-[#F4F0E8] transition-colors font-semibold">
                           Billing & Limits
                         </Link>
-                        <div className="h-px bg-gray-100 my-1" />
+                        <div className="h-px bg-[#DDD5C4] my-1" />
                         <button onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors font-medium">
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#E85D4E] hover:bg-[#E85D4E]/10 border-0 bg-transparent transition-colors font-semibold text-left cursor-pointer">
                           Sign Out
                         </button>
                       </div>
@@ -197,11 +197,11 @@ function Navbar() {
             ) : (
               <>
                 <button onClick={() => setAuthModal("login")}
-                  className="btn-ghost-light hidden sm:flex">
+                  className="hidden sm:flex text-sm font-semibold text-[#1B2A4A]/80 hover:text-[#1B2A4A] hover:underline px-4 py-2 transition-all font-sans bg-transparent border-0 cursor-pointer">
                   Sign In
                 </button>
                 <button onClick={() => setAuthModal("register")}
-                  className="btn-brand flex items-center gap-1.5">
+                  className="bg-[#DB9A3C] hover:bg-[#c4862f] text-[#1B2A4A] font-semibold text-sm rounded-[6px] px-5 py-2.5 flex items-center justify-center gap-1.5 transition-all active:scale-95 font-sans border-0 cursor-pointer">
                   Get Started
                 </button>
               </>
@@ -212,27 +212,30 @@ function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="lg:hidden bg-white border-b border-gray-100 shadow-sm">
+        <div className="lg:hidden bg-[#FDFBF7] border-b border-[#DDD5C4] font-sans text-left">
           <div className="px-4 py-3 space-y-1">
             {navLinks.map(link => (
               <Link key={link.to} to={link.to} onClick={() => setMenuOpen(false)}
-                className="block px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                className="block px-3 py-2.5 rounded-[6px] text-sm font-semibold text-[#1B2A4A] hover:bg-[#F4F0E8] transition-colors">
                 {link.label}
               </Link>
             ))}
             {!isLoggedIn && (
               <div className="pt-2 flex gap-2">
                 <button onClick={() => { setAuthModal("login"); setMenuOpen(false); }}
-                  className="btn-soft flex-1 text-center">Sign In</button>
+                  className="flex-1 bg-white border border-[#DDD5C4] rounded-[6px] py-2 text-center text-sm font-semibold text-[#1B2A4A] cursor-pointer">Sign In</button>
                 <button onClick={() => { setAuthModal("register"); setMenuOpen(false); }}
-                  className="btn-brand flex-1 text-center">Get Started</button>
+                  className="flex-1 bg-[#DB9A3C] hover:bg-[#c4862f] rounded-[6px] py-2 text-center text-sm font-semibold text-[#1B2A4A] border-0 cursor-pointer">Get Started</button>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {authModal && <AuthModal mode={authModal} onClose={() => setAuthModal(null)} />}
+      {/* Auth Modal Gate */}
+      {authModal && (
+        <AuthModal mode={authModal} onClose={() => setAuthModal(null)} />
+      )}
     </>
   );
 }

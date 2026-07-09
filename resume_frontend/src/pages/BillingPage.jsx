@@ -8,30 +8,30 @@ const LimitProgress = ({ title, icon: Icon, current, max, colorClass }) => {
   const isLimitReached = max !== "Unlimited" && current >= max;
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+    <div className="bg-[#FDFBF7] border border-[#DDD5C4] rounded-[12px] p-6 shadow-none flex flex-col justify-between text-left font-sans">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className={`p-2.5 rounded-xl ${isLimitReached ? 'bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400' : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400'}`}>
+            <div className={`p-2.5 rounded-[8px] ${isLimitReached ? 'bg-[#E85D4E]/10 text-[#E85D4E]' : 'bg-[#1B2A4A]/10 text-[#1B2A4A]'}`}>
               <Icon size={18} />
             </div>
-            <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{title}</h3>
+            <h3 className="font-semibold text-[#1B2A4A] font-space text-sm">{title}</h3>
           </div>
-          <span className="text-xs font-semibold text-slate-400">
+          <span className="text-xs font-semibold text-[#5A5347]">
             {current} / {max}
           </span>
         </div>
 
-        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-2">
+        <div className="w-full bg-[#F4F0E8] rounded-full h-2 mb-2">
           <div 
-            className={`h-2 rounded-full transition-all duration-500 ${colorClass}`}
-            style={{ width: `${pct}%` }} 
+            className="h-2 rounded-full transition-all duration-500"
+            style={{ width: `${pct}%`, backgroundColor: isLimitReached ? '#E85D4E' : colorClass }} 
           />
         </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] font-medium text-[#5A5347]">
           {max === "Unlimited" 
             ? "No restrictions applied" 
             : isLimitReached 
@@ -39,7 +39,7 @@ const LimitProgress = ({ title, icon: Icon, current, max, colorClass }) => {
               : `${max - current} remaining`}
         </span>
         {isLimitReached && (
-          <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-bold text-[#E85D4E] bg-[#E85D4E]/10 px-2 py-0.5 rounded border border-[#E85D4E]/20">
             LOCKED
           </span>
         )}
@@ -64,52 +64,46 @@ const BillingPage = () => {
   const scanCount = user?.scanCount || 0;
   const enhanceCount = user?.enhanceCount || 0;
   const exportCount = user?.exportCount || 0;
-  // Fallback for resumes count since it requires API, but we can default or show status
-  // We will assume 1 if they have resumes or 0 if they don't, or let the user view dashboard for resume count
-  // In dynamic dashboard we know resumes.length, here we'll represent general status
   
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+    <div className="min-h-screen bg-[#F4F0E8] transition-colors duration-200 text-left font-sans">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
         {/* Upgrade Modal */}
         <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
 
         {/* Page Header */}
-        <div className="mb-10 pb-6 border-b border-slate-200 dark:border-slate-800">
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        <div className="mb-10 pb-6 border-b border-[#DDD5C4]">
+          <h1 className="text-3xl sm:text-4xl font-semibold text-[#1B2A4A] font-space tracking-tight">
             Plans & Limits
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
-            Monitor your SaaS quotas and upgrade subscription status.
+          <p className="text-[#5A5347] mt-2 text-sm">
+            Monitor your quota status metrics and unlock professional upgrades.
           </p>
         </div>
 
         {/* Subscription Info Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-3xl p-8 shadow-card mb-10 relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-          
+        <div className="bg-[#FDFBF7] border border-[#DDD5C4] rounded-[12px] p-8 shadow-none mb-10 relative overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
             <div>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">
+              <span className="text-xs font-bold text-[#5A5347] uppercase tracking-widest block mb-1">
                 Current Plan
               </span>
               <div className="flex items-center gap-3">
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-2xl sm:text-3xl font-semibold text-[#1B2A4A] font-space">
                   {isPro ? "CareerDraft Pro" : "Free Plan"}
                 </h2>
                 {isPro ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 px-3 py-1 rounded-full border border-amber-100 dark:border-amber-900 animate-pulse">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#DB9A3C] bg-[#DB9A3C]/10 px-3 py-1 rounded-full border border-[#DB9A3C]/20 animate-pulse font-sans">
                     <FaCrown size={11} /> Pro Tier
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-slate-850 dark:text-slate-400 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-850">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#5A5347] bg-[#F4F0E8] px-3 py-1 rounded-full border border-[#DDD5C4] font-sans">
                     Basic Tier
                   </span>
                 )}
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-3 max-w-lg">
+              <p className="text-[#5A5347] text-sm mt-3 max-w-lg leading-relaxed">
                 {isPro 
                   ? "Thank you for upgrading! You have unlimited access to ATS analyzer scans, AI suggestions, custom layout versions, and PDF exports."
                   : "You are currently on the freemium basic plan. Review your quota metrics below or upgrade to access unrestricted tools."}
@@ -119,7 +113,7 @@ const BillingPage = () => {
             {!isPro && (
               <button 
                 onClick={() => setShowUpgradeModal(true)}
-                className="btn-brand flex items-center gap-2 font-bold px-6 py-3 shrink-0"
+                className="bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-sm rounded-[6px] px-6 py-3.5 transition-all font-sans border-0 flex items-center gap-2 shrink-0 shadow-none"
               >
                 <FaCrown /> Upgrade to Pro — ₹49
               </button>
@@ -128,8 +122,8 @@ const BillingPage = () => {
         </div>
 
         {/* Limits Grid */}
-        <h3 className="text-xl font-extrabold text-slate-850 dark:text-slate-200 mb-6 flex items-center gap-2">
-          <FaChartBar className="text-indigo-500" /> Quota Status
+        <h3 className="text-lg font-semibold text-[#1B2A4A] font-space mb-6 flex items-center gap-2">
+          <FaChartBar className="text-[#1B2A4A]" /> Quota Status
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -138,7 +132,7 @@ const BillingPage = () => {
             icon={FaChartBar}
             current={scanCount}
             max={scanLimit}
-            colorClass="bg-gradient-to-r from-blue-500 to-indigo-500"
+            colorClass="#1B2A4A"
           />
 
           <LimitProgress 
@@ -146,7 +140,7 @@ const BillingPage = () => {
             icon={FaMagic}
             current={enhanceCount}
             max={enhanceLimit}
-            colorClass="bg-gradient-to-r from-indigo-500 to-purple-500"
+            colorClass="#DB9A3C"
           />
 
           <LimitProgress 
@@ -154,30 +148,30 @@ const BillingPage = () => {
             icon={FaDownload}
             current={exportCount}
             max={exportLimit}
-            colorClass="bg-gradient-to-r from-purple-500 to-pink-500"
+            colorClass="#1B2A4A"
           />
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div className="bg-[#FDFBF7] border border-[#DDD5C4] rounded-[12px] p-6 flex flex-col justify-between text-left">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400">
+                  <div className="p-2.5 rounded-[8px] bg-[#1B2A4A]/10 text-[#1B2A4A]">
                     <FaFileAlt size={18} />
                   </div>
-                  <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Resume Management</h3>
+                  <h3 className="font-semibold text-[#1B2A4A] font-space text-sm">Resume Management</h3>
                 </div>
-                <span className="text-xs font-semibold text-slate-400">
+                <span className="text-xs font-semibold text-[#5A5347]">
                   {isPro ? "Unlimited" : "1 Active Draft"}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[#5A5347] font-sans leading-relaxed">
                 {isPro 
                   ? "Create and manage as many resumes and layout structures as you need."
                   : "Limited to 1 active resume draft. Free version snapshots are available."}
               </p>
             </div>
-            <div className="mt-3 border-t border-slate-50 dark:border-slate-850 pt-3">
-              <span className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+            <div className="mt-3 border-t border-[#DDD5C4] pt-3 font-sans">
+              <span className="text-[11px] font-semibold text-[#DB9A3C]">
                 {isPro ? "All slots unlocked" : "Upgrade to save multiple drafts"}
               </span>
             </div>
@@ -186,29 +180,29 @@ const BillingPage = () => {
 
         {/* Plan Comparisons */}
         {!isPro && (
-          <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/25 border border-indigo-150/40 dark:border-indigo-900/40 rounded-3xl p-8 shadow-card flex flex-col md:flex-row gap-8 items-center justify-between">
+          <div className="bg-[#FDFBF7] border border-[#DDD5C4] rounded-[12px] p-8 shadow-none flex flex-col md:flex-row gap-8 items-center justify-between">
             <div className="space-y-4">
-              <h4 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <FaRocket className="text-amber-500 animate-bounce" /> Supercharge Your Job Search
+              <h4 className="text-xl font-semibold text-[#1B2A4A] font-space flex items-center gap-2">
+                <FaRocket className="text-[#DB9A3C] animate-bounce" /> Supercharge Your Job Search
               </h4>
-              <ul className="space-y-2.5 text-sm text-slate-600 dark:text-slate-300">
+              <ul className="space-y-2.5 text-sm text-[#5A5347] font-sans">
                 <li className="flex items-center gap-2">
-                  <FaCheck className="text-emerald-500 shrink-0" />
-                  <strong>Unlimited Scans:</strong> Continuous matching optimization against multiple JDs.
+                  <FaCheck className="text-[#3F9F6B] shrink-0" />
+                  <span><strong>Unlimited Scans:</strong> Continuous matching optimization against multiple JDs.</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <FaCheck className="text-emerald-500 shrink-0" />
-                  <strong>AI Expert Assistant:</strong> Rewritten resume summary paragraphs & customized bullets.
+                  <FaCheck className="text-[#3F9F6B] shrink-0" />
+                  <span><strong>AI Expert Assistant:</strong> Rewritten resume summary paragraphs & customized bullets.</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <FaCheck className="text-emerald-500 shrink-0" />
-                  <strong>Git-Style Version Control:</strong> Snapshots history to compare layout enhancements.
+                  <FaCheck className="text-[#3F9F6B] shrink-0" />
+                  <span><strong>Git-Style Version Control:</strong> Snapshots history to compare layout enhancements.</span>
                 </li>
               </ul>
             </div>
             <button 
               onClick={() => setShowUpgradeModal(true)}
-              className="btn-brand font-bold py-3.5 px-8 flex items-center gap-2 text-base shadow-brand shrink-0"
+              className="bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-sm rounded-[6px] px-6 py-3.5 transition-all font-sans border-0 flex items-center gap-2 shrink-0 shadow-none"
             >
               <FaCrown /> Get Pro Access
             </button>

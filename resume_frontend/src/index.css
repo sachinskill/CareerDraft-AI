@@ -4,6 +4,17 @@
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 @layer base {
+  :root {
+    --ink-navy: #1B2A4A;
+    --paper: #F4F0E8;
+    --paper-white: #FDFBF7;
+    --signal-amber: #DB9A3C;
+    --match-green: #3F9F6B;
+    --miss-coral: #E85D4E;
+    --text-secondary: #5A5347;
+    --border-hairline: #DDD5C4;
+  }
+
   html {
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -11,10 +22,14 @@
   }
 
   body {
-    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 45%, #faf5ff 100%);
-    background-attachment: fixed;
+    background-color: var(--paper);
     min-height: 100vh;
-    color: #1e293b;
+    color: var(--ink-navy);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
   }
 
   /* Thin, elegant scrollbars */
@@ -34,47 +49,67 @@
 /* ── Component tokens ──────────────────────────────────────────────────────── */
 @layer components {
 
-  /* Card — white, soft shadow, rounded */
+  /* Card — white, 1px hairline border, rounded */
   .saas-card {
-    @apply bg-white rounded-2xl border border-gray-100 shadow-card;
+    background-color: var(--paper-white);
+    border: 1px solid var(--border-hairline);
+    border-radius: 12px;
   }
   .saas-card-hover {
-    @apply saas-card transition-shadow duration-200 hover:shadow-card-hover;
+    @apply saas-card transition-all duration-200;
   }
 
-  /* Gradient brand button */
+  /* Solid brand button - no gradient */
   .btn-brand {
-    @apply text-white font-semibold rounded-xl px-5 py-2.5 text-sm
+    @apply font-medium rounded-[6px] px-5 py-2.5 text-sm
            transition-all duration-200 active:scale-95
            disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
-    box-shadow: 0 4px 14px 0 rgb(99 102 241 / 0.30);
+    background-color: var(--signal-amber);
+    color: var(--ink-navy);
+    font-family: 'Inter', sans-serif;
   }
   .btn-brand:hover:not(:disabled) {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #db2777 100%);
-    box-shadow: 0 6px 20px 0 rgb(99 102 241 / 0.40);
+    background-color: #d69430;
     transform: translateY(-1px);
   }
 
   /* Soft outline button */
   .btn-soft {
-    @apply bg-white text-gray-700 font-medium rounded-xl px-5 py-2.5 text-sm
-           border border-gray-200 transition-all duration-200
-           hover:bg-gray-50 hover:border-gray-300 active:scale-95;
+    @apply font-medium rounded-[6px] px-5 py-2.5 text-sm
+           transition-all duration-200 active:scale-95;
+    background-color: var(--paper-white);
+    color: var(--ink-navy);
+    border: 1px solid var(--border-hairline);
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-soft:hover {
+    background-color: var(--paper);
   }
 
   /* Ghost button */
   .btn-ghost-light {
-    @apply text-gray-500 font-medium rounded-xl px-4 py-2 text-sm
-           transition-all duration-150 hover:bg-gray-100 hover:text-gray-800 active:scale-95;
+    @apply font-medium rounded-[6px] px-4 py-2 text-sm
+           transition-all duration-150 active:scale-95;
+    color: var(--ink-navy);
+    opacity: 0.8;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-ghost-light:hover {
+    background-color: var(--paper);
+    opacity: 1;
   }
 
   /* Input field */
   .input-light {
-    @apply w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm
-           text-gray-800 placeholder-gray-400 outline-none
-           transition-all duration-150
-           focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100;
+    @apply w-full rounded-xl px-3.5 py-2.5 text-sm
+           placeholder-gray-400 outline-none
+           transition-all duration-150;
+    background-color: var(--paper-white);
+    border: 1px solid var(--border-hairline);
+    color: var(--ink-navy);
+  }
+  .input-light:focus {
+    border-color: var(--signal-amber);
   }
 
   /* Textarea */
@@ -84,34 +119,66 @@
 
   /* Section heading */
   .section-title {
-    @apply text-lg font-bold text-gray-800;
+    @apply text-lg font-bold;
+    color: var(--ink-navy);
+    font-family: 'Space Grotesk', sans-serif;
   }
 
   /* Badge */
   .badge-light {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium
-           bg-indigo-50 text-indigo-700 border border-indigo-100;
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+    background-color: var(--paper);
+    color: var(--ink-navy);
+    border: 1px solid var(--border-hairline);
   }
 
   /* Sidebar nav item */
   .nav-item {
     @apply w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left
-           text-sm font-medium text-gray-500 transition-all duration-150
-           hover:bg-gray-50 hover:text-gray-800;
+           text-sm font-medium transition-all duration-150;
+    color: var(--ink-navy);
+    opacity: 0.8;
+  }
+  .nav-item:hover {
+    background-color: var(--paper);
+    opacity: 1;
   }
   .nav-item-active {
-    @apply bg-gradient-to-r from-indigo-50 to-purple-50
-           text-indigo-700 border border-indigo-100/60;
+    background-color: var(--paper);
+    color: var(--ink-navy);
+    border: 1px solid var(--border-hairline);
+    opacity: 1;
   }
 
   /* Score ring wrapper */
-  .score-ring-success { color: #10b981; }
-  .score-ring-warning { color: #f59e0b; }
-  .score-ring-error   { color: #ef4444; }
+  .score-ring-success { color: var(--match-green); }
+  .score-ring-warning { color: var(--signal-amber); }
+  .score-ring-error   { color: var(--miss-coral); }
 
   /* Top bar */
   .topbar {
-    @apply bg-white/80 backdrop-blur-md border-b border-gray-100
-           px-5 py-3 flex items-center justify-between gap-3;
+    @apply px-5 py-3 flex items-center justify-between gap-3;
+    background-color: var(--paper-white);
+    border-bottom: 1px solid var(--border-hairline);
   }
 }
+
+@keyframes scan {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.animate-scan {
+  animation: scan 4s linear infinite;
+}
+
+.font-space {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-mono-score {
+  font-family: 'IBM Plex Mono', monospace;
+}
+

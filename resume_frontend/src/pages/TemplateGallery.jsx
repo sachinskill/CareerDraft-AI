@@ -18,8 +18,6 @@ const CATEGORY_FILTERS = [
 ];
 
 // Virtual canvas size — smaller than full A4 (595×842) to improve scale ratio.
-// Templates use flex/percentage layouts so they render cleanly at any width.
-// At 420px canvas in a ~300px card, scale ≈ 0.71 → 10px font becomes 7px (readable!).
 const CANVAS_W = 420;
 const CANVAS_H = 594; // maintains exact A4 ratio (1:1.414)
 
@@ -48,19 +46,19 @@ const TemplateCard = ({ template, isSelected, onSelect }) => {
     >
       {/* Selected indicator */}
       {isSelected && (
-        <div className="absolute top-2.5 right-2.5 z-30 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg ring-2 ring-white">
-          <FaCheck className="text-primary-content" size={10} />
+        <div className="absolute top-2.5 right-2.5 z-30 w-6 h-6 rounded-full bg-[#DB9A3C] flex items-center justify-center shadow-md border border-white">
+          <FaCheck className="text-[#1B2A4A]" size={10} />
         </div>
       )}
 
       {/* Paper sheet — realistic A4 proportions */}
       <div 
         ref={cardRef} 
-        className={`relative w-full overflow-hidden rounded-md bg-white transition-all duration-300
-          shadow-[0_2px_8px_rgba(0,0,0,0.08)] 
-          group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.16)]
-          group-hover:-translate-y-1 border border-black/[0.06]
-          ${isSelected ? "ring-2 ring-primary ring-offset-2" : ""}`}
+        className={`relative w-full overflow-hidden rounded-[8px] bg-white transition-all duration-300
+          shadow-[0_2px_8px_rgba(27,42,74,0.06)] 
+          group-hover:shadow-[0_12px_32px_rgba(27,42,74,0.12)]
+          group-hover:-translate-y-1 border border-[#DDD5C4]
+          ${isSelected ? "ring-2 ring-[#DB9A3C] ring-offset-2 ring-offset-[#F4F0E8]" : ""}`}
         style={{ aspectRatio: `${CANVAS_W} / ${CANVAS_H}` }}
       >
         <div 
@@ -71,19 +69,19 @@ const TemplateCard = ({ template, isSelected, onSelect }) => {
         </div>
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-all duration-300 flex items-center justify-center pointer-events-none">
-          <span className="opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-300 bg-primary text-primary-content text-[11px] font-bold px-4 py-2 rounded-lg shadow-lg flex items-center gap-1.5 pointer-events-auto">
+        <div className="absolute inset-0 bg-[#1B2A4A]/0 group-hover:bg-[#1B2A4A]/10 transition-all duration-300 flex items-center justify-center pointer-events-none">
+          <span className="opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-300 bg-[#DB9A3C] text-[#1B2A4A] text-xs font-semibold px-4 py-2.5 rounded-[6px] shadow-lg flex items-center gap-1.5 pointer-events-auto">
             Use Template <FaArrowRight size={9} />
           </span>
         </div>
       </div>
 
       {/* Compact footer */}
-      <div className="mt-2.5 px-0.5">
-        <h4 className="font-bold text-base-content text-[13px] group-hover:text-primary transition-colors truncate">
+      <div className="mt-3 px-0.5 text-left">
+        <h4 className="font-semibold text-[#1B2A4A] font-space text-sm group-hover:text-[#DB9A3C] transition-colors truncate">
           {template.name}
         </h4>
-        <p className="text-[11px] text-base-content/45 truncate mt-0.5">
+        <p className="text-xs text-[#5A5347] font-sans truncate mt-0.5">
           {template.description.split('.')[0]}
         </p>
       </div>
@@ -116,19 +114,19 @@ const TemplateGallery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen bg-[#F4F0E8] text-left">
       {/* Page header */}
-      <div className="border-b border-base-200 bg-gradient-to-b from-base-200/50 to-base-100">
+      <div className="border-b border-[#DDD5C4] bg-[#FDFBF7]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-              <FaMagic className="animate-pulse" />
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 bg-[#FDFBF7] border border-[#DDD5C4] text-[#1B2A4A] text-xs font-semibold px-3 py-1.5 rounded-[6px] mb-4 font-mono-score">
+              <FaMagic className="animate-pulse text-[#DB9A3C]" />
               <span>{TEMPLATES.length} Curated Layout Designs</span>
             </div>
-            <h1 className="text-4xl font-extrabold text-base-content tracking-tight mb-3 animate-fade-in">
+            <h1 className="text-3xl sm:text-4xl font-semibold text-[#1B2A4A] font-space tracking-tight mb-3">
               Select Your Resume Template
             </h1>
-            <p className="text-base-content/60 text-lg">
+            <p className="text-[#5A5347] font-sans text-sm max-w-2xl leading-relaxed">
               {mode === "ai" 
                 ? "Choose a layout structure. Our AI will automatically organize and structure your content." 
                 : "Select a professional layout to start building your resume draft."}
@@ -136,27 +134,27 @@ const TemplateGallery = () => {
           </div>
 
           {/* Search + filters */}
-          <div className="mt-10 max-w-4xl mx-auto space-y-4">
-            <div className="relative max-w-md mx-auto">
-              <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base-content/40" size={14} />
+          <div className="mt-8 max-w-4xl space-y-4">
+            <div className="relative max-w-md">
+              <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5A5347]" size={14} />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search template layout..."
-                className="input input-bordered pl-10 w-full focus:outline-none focus:border-primary bg-base-100"
+                className="w-full text-sm bg-white border border-[#DDD5C4] rounded-[8px] pl-10 pr-4 py-2.5 outline-none focus:border-[#DB9A3C] text-[#1B2A4A] font-sans transition-all"
               />
             </div>
             
             {/* Category filter tabs */}
-            <div className="flex flex-wrap justify-center gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               {CATEGORY_FILTERS.map(f => (
                 <button
                   key={f.id}
                   onClick={() => setActiveFilter(f.id)}
-                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border
+                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border font-sans cursor-pointer
                     ${activeFilter === f.id
-                      ? "bg-primary text-primary-content border-primary shadow-md"
-                      : "bg-base-100 text-base-content/70 border-base-200 hover:border-primary/50 hover:bg-base-200"}`}>
+                      ? "bg-[#1B2A4A] text-[#FDFBF7] border-[#1B2A4A] shadow-sm"
+                      : "bg-white text-[#5A5347] border-[#DDD5C4] hover:border-[#DB9A3C]/50 hover:bg-[#F4F0E8]"}`}>
                   {f.label}
                 </button>
               ))}
@@ -168,20 +166,20 @@ const TemplateGallery = () => {
       {/* Gallery grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         {filtered.length === 0 ? (
-          <div className="text-center py-20 text-base-content/40">
+          <div className="text-center py-20 text-[#5A5347] font-sans">
             <p className="text-lg font-medium">No templates match your filters or search query</p>
             <button onClick={() => { setSearch(""); setActiveFilter("all"); }}
-              className="mt-3 btn btn-sm btn-ghost text-primary">
+              className="mt-3 text-xs font-semibold text-[#DB9A3C] hover:underline bg-transparent border-0 cursor-pointer">
               Clear filters
             </button>
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-8">
-              <p className="text-sm font-semibold text-base-content/60">Showing {filtered.length} layout designs</p>
-              <div className="text-xs text-base-content/40">Mode: <span className="font-bold text-primary uppercase">{mode}</span></div>
+            <div className="flex items-center justify-between mb-8 font-sans">
+              <p className="text-sm font-medium text-[#5A5347]">Showing {filtered.length} layout designs</p>
+              <div className="text-xs text-[#5A5347]">Mode: <span className="font-bold text-[#DB9A3C] uppercase">{mode}</span></div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filtered.map(template => (
                 <TemplateCard
                   key={template.id}
@@ -194,20 +192,20 @@ const TemplateGallery = () => {
           </>
         )}
 
-        {/* Sticky/Bottom selected continuation CTA */}
+        {/* Selected continuation CTA */}
         {selectedTemplate && (
-          <div className="mt-16 text-center animate-fade-in">
-            <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-base-200/80 backdrop-blur-md rounded-2xl border border-base-300 p-6 shadow-xl max-w-2xl mx-auto">
+          <div className="mt-16 text-center animate-fadeIn font-sans">
+            <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-[#FDFBF7] backdrop-blur-md rounded-[12px] border border-[#DDD5C4] p-6 shadow-lg max-w-2xl mx-auto text-left">
               <div className="text-left shrink-0">
-                <p className="text-xs text-base-content/50 uppercase font-bold tracking-wider">Active Design Selected</p>
-                <p className="text-sm font-bold text-base-content mt-0.5">
+                <p className="text-xs text-[#5A5347] uppercase font-bold tracking-wider font-mono-score">Active Design Selected</p>
+                <p className="text-sm font-bold text-[#1B2A4A] font-space mt-0.5">
                   {TEMPLATES.find(t => t.id === selectedTemplate)?.name ?? selectedTemplate}
                 </p>
               </div>
-              <div className="h-px sm:h-8 w-full sm:w-px bg-base-300" />
+              <div className="h-px sm:h-8 w-full sm:w-px bg-[#DDD5C4]" />
               <button 
                 onClick={() => navigate(`/generate-resume?template=${selectedTemplate}&mode=${mode}`)}
-                className="btn btn-primary flex items-center gap-2 shadow-lg w-full sm:w-auto">
+                className="bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-sm rounded-[6px] px-5 py-2.5 transition-all font-sans border-0 flex items-center gap-2 shadow-none cursor-pointer">
                 Continue with Selection <FaArrowRight size={13} />
               </button>
             </div>

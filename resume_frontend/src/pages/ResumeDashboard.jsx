@@ -176,29 +176,29 @@ const ResumeDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+    <div className="min-h-screen bg-[#14213B] transition-colors duration-200 text-left">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
         {/* Dashboard Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10 pb-6 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10 pb-6 border-b border-[#2C3E5E]">
           <div>
-            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-3xl font-semibold text-[#F1F3F6] font-space tracking-tight">
               My Resumes
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
+            <p className="text-[#9AA7BE] font-sans mt-2 text-sm">
               Manage your resumes, track ATS performance, and rollback versions.
             </p>
           </div>
           
           <div className="flex items-center gap-3">
             {!user?.isPro && (
-              <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-900">
+              <span className="text-xs font-semibold bg-[#1E2E4F] text-[#E8A33D] px-3 py-1.5 rounded-full border border-[#2C3E5E] font-sans">
                 Resumes: {resumes.length}/1 draft
               </span>
             )}
             <button
               onClick={handleCreateResume}
-              className="btn-brand flex items-center gap-2 font-semibold"
+              className="bg-[#E8A33D] hover:bg-[#d69430] active:scale-95 text-[#14213B] font-semibold text-sm rounded-[6px] px-5 py-2.5 transition-all font-sans flex items-center gap-2 border-0"
             >
               <FaPlus /> Create Resume
             </button>
@@ -214,81 +214,97 @@ const ResumeDashboard = () => {
           <div className="flex-1">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <FaSpinner className="animate-spin text-4xl text-indigo-600 mb-4" />
-                <p className="text-slate-500 text-sm">Loading your resume dashboard...</p>
+                <FaSpinner className="animate-spin text-4xl text-[#E8A33D] mb-4" />
+                <p className="text-[#9AA7BE] text-sm font-sans">Loading your resume dashboard...</p>
               </div>
             ) : resumes.length === 0 ? (
-              <div className="text-center bg-white dark:bg-slate-900 rounded-3xl p-12 shadow-card border border-slate-100 dark:border-slate-800/80">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FaFileAlt className="text-2xl text-slate-400" />
+              <div className="text-center bg-[#1E2E4F] border border-[#2C3E5E] rounded-[12px] p-12 shadow-none">
+                <div className="w-16 h-16 bg-[#14213B] border border-[#2C3E5E] rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FaFileAlt className="text-2xl text-[#9AA7BE]" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">No resumes yet</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto mb-6">
+                <h3 className="text-xl font-semibold text-[#F1F3F6] font-space mb-2">No resumes yet</h3>
+                <p className="text-[#9AA7BE] text-sm font-sans max-w-sm mx-auto mb-6">
                   Create your first resume with AI help to start optimizing for job interviews.
                 </p>
                 <button
                   onClick={handleCreateResume}
-                  className="btn-brand flex items-center gap-2 mx-auto font-semibold"
+                  className="bg-[#E8A33D] hover:bg-[#d69430] active:scale-95 text-[#14213B] font-semibold text-sm rounded-[6px] px-5 py-2.5 transition-all font-sans flex items-center gap-2 border-0 mx-auto"
                 >
                   <FaPlus /> Create Resume
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-6">
+                
                 {resumes.map((resume) => {
                   const name = getResumeName(resume);
-                  const status = resume.currentStatus || "ORIGINAL";
                   const template = resume.selectedTemplate || "default";
                   
                   return (
                     <div 
                       key={resume.id}
                       onClick={() => handleEditResume(resume)}
-                      className="group cursor-pointer bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all flex flex-col justify-between"
+                      className="group cursor-pointer bg-[#1E2E4F] border border-[#2C3E5E] rounded-[12px] p-6 transition-all hover:border-[#E8A33D]/50 flex flex-col justify-between min-h-[300px]"
                     >
                       <div>
-                        {/* Resume preview card placeholder */}
-                        <div className="h-40 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800/60 flex flex-col justify-between p-4 mb-4 relative overflow-hidden group-hover:bg-slate-100/50 dark:group-hover:bg-slate-900/50 transition-colors">
-                          <div className="flex justify-between items-start">
-                            <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400 dark:text-slate-500">
+                        {/* Resume preview card viewport */}
+                        <div className="h-40 rounded-[8px] bg-[#14213B] border border-[#2C3E5E] flex items-center justify-center p-4 mb-4 relative overflow-hidden group-hover:bg-[#14213B]/80 transition-colors">
+                          
+                          {/* Mini document page thumbnail */}
+                          <div className="w-[110px] h-[135px] bg-[#FFFFFF] border border-[#D3D1C7] rounded-[2px] shadow-sm flex flex-col p-2 relative shrink-0">
+                            {/* Header stripe based on template */}
+                            <div className={`h-2.5 w-full rounded-[1px] mb-2 shrink-0 ${
+                              template === "modern" ? "bg-[#3B82F6]" : template === "minimal" ? "bg-[#1B2A4A]" : "bg-[#E8A33D]"
+                            }`} />
+                            
+                            {/* Lines representing text */}
+                            <div className="space-y-1">
+                              <div className="h-1 w-2/3 bg-[#EDEFF2] rounded-[1px]" />
+                              <div className="h-1 w-full bg-[#EDEFF2] rounded-[1px]" />
+                              <div className="h-1 w-5/6 bg-[#EDEFF2] rounded-[1px]" />
+                              <div className="h-1 w-3/4 bg-[#EDEFF2] rounded-[1px]" />
+                              <div className="h-1 w-1/2 bg-[#EDEFF2] rounded-[1px]" />
+                            </div>
+                            
+                            {/* Template Tag */}
+                            <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[6px] font-bold font-mono text-[#4A5568] uppercase bg-[#EDEFF2] px-1 py-0.5 rounded-[1px] text-center truncate">
                               {template} template
                             </span>
-                            {resume.atsScoreSnapshot && (
-                              <span className="text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900">
-                                ATS Score: {resume.atsScoreSnapshot}
-                              </span>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-1.5">
-                            <div className="h-2 w-2/3 bg-slate-200 dark:bg-slate-800 rounded" />
-                            <div className="h-2 w-1/2 bg-slate-200 dark:bg-slate-800 rounded" />
-                            <div className="h-2 w-3/4 bg-slate-200 dark:bg-slate-800 rounded" />
                           </div>
 
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-600/90 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
-                            <FaEdit /> Edit Draft
+                          {/* Top-Right corner Score Badge inside card preview */}
+                          {resume.atsScoreSnapshot && (
+                            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold bg-[#3F9F6B]/15 text-[#3F9F6B] px-2 py-0.5 rounded-full border border-[#3F9F6B]/25 font-sans">
+                              Score: {resume.atsScoreSnapshot}
+                            </span>
+                          )}
+
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-[#14213B]/85 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <span className="bg-[#E8A33D] text-[#14213B] text-xs font-semibold px-3.5 py-2 rounded-[6px] flex items-center gap-1.5 active:scale-95 transition-all">
+                              <FaEdit /> Edit Draft
+                            </span>
                           </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-lg group-hover:text-indigo-600 transition-colors truncate">
+                        <h3 className="font-semibold text-[#F1F3F6] font-space text-base group-hover:text-[#E8A33D] transition-colors truncate">
                           {name}
                         </h3>
-                        <p className="text-slate-400 text-xs mt-1">
+                        <p className="text-[#9AA7BE] font-sans text-xs mt-1">
                           Last updated: {new Date(resume.updatedAt || resume.createdAt).toLocaleDateString()}
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-850 mt-6 pt-4">
+                      <div className="flex items-center justify-between border-t border-[#2C3E5E] mt-6 pt-4">
                         <button
                           onClick={(e) => handleViewHistory(resume, e)}
-                          className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold transition-colors"
+                          className="flex items-center gap-1.5 text-xs text-[#E8A33D] hover:text-[#d69430] font-semibold transition-colors bg-transparent border-0 cursor-pointer"
                         >
                           <FaHistory /> Versions
                         </button>
                         <button
                           onClick={(e) => handleDeleteResume(resume.id, e)}
-                          className="text-xs text-red-500 hover:text-red-600 font-semibold transition-colors"
+                          className="text-xs text-[#E85D4E] hover:text-[#b83a2c] font-semibold transition-colors bg-transparent border-0 cursor-pointer"
                         >
                           Delete
                         </button>
@@ -296,72 +312,86 @@ const ResumeDashboard = () => {
                     </div>
                   );
                 })}
+
+                {/* Add New Resume Placeholder Card */}
+                <div 
+                  onClick={handleCreateResume}
+                  className="group cursor-pointer bg-transparent border-2 border-dashed border-[#2C3E5E] hover:border-[#E8A33D]/50 rounded-[12px] p-6 transition-all flex flex-col items-center justify-center text-center min-h-[300px]"
+                >
+                  <div className="w-12 h-12 bg-[#1E2E4F] border border-[#2C3E5E] rounded-full flex items-center justify-center mb-4 group-hover:border-[#E8A33D]/50 transition-all">
+                    <FaPlus className="text-lg text-[#E8A33D]" />
+                  </div>
+                  <span className="text-sm font-semibold text-[#9AA7BE] font-space group-hover:text-[#F1F3F6] transition-colors">
+                    Create another resume
+                  </span>
+                </div>
+
               </div>
             )}
           </div>
 
           {/* Version history panel */}
           {selectedResumeForHistory && (
-            <div className="w-full lg:w-96 shrink-0 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-card h-fit animate-slideIn">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-4">
+            <div className="w-full lg:w-96 shrink-0 bg-[#1E2E4F] border border-[#2C3E5E] rounded-[12px] p-6 shadow-none h-fit animate-slideIn">
+              <div className="flex items-center justify-between pb-4 border-b border-[#2C3E5E] mb-4">
                 <div className="flex items-center gap-2">
-                  <FaHistory className="text-indigo-600" />
-                  <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg">
+                  <FaHistory className="text-[#E8A33D]" />
+                  <h3 className="font-semibold text-[#F1F3F6] font-space text-lg">
                     Version History
                   </h3>
                 </div>
                 <button 
                   onClick={() => setSelectedResumeForHistory(null)}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="text-[#9AA7BE] hover:text-[#F1F3F6] transition-colors bg-transparent border-0 cursor-pointer"
                 >
                   <FaTimes />
                 </button>
               </div>
 
               <div className="mb-4">
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#9AA7BE] font-sans">
                   Showing historical versions for:
                 </p>
-                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
+                <p className="text-sm font-semibold text-[#F1F3F6] font-space truncate">
                   {getResumeName(selectedResumeForHistory)}
                 </p>
               </div>
 
               {isLoadingVersions ? (
                 <div className="flex justify-center py-10">
-                  <FaSpinner className="animate-spin text-2xl text-indigo-600" />
+                  <FaSpinner className="animate-spin text-2xl text-[#E8A33D]" />
                 </div>
               ) : versions.length === 0 ? (
-                <p className="text-center text-slate-400 text-sm py-10">No versions found.</p>
+                <p className="text-center text-[#9AA7BE] text-sm py-10 font-sans">No versions found.</p>
               ) : (
                 <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
                   {versions.map((ver) => (
                     <div 
                       key={ver.id}
-                      className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-850 hover:border-slate-200 dark:hover:border-slate-750 transition-all flex flex-col justify-between"
+                      className="bg-[#14213B] p-4 rounded-xl border border-[#2C3E5E] hover:border-[#E8A33D]/30 transition-all flex flex-col justify-between"
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-semibold text-[#E8A33D] bg-[#1E2E4F] border border-[#2C3E5E] px-2.5 py-0.5 rounded-full">
                           v{ver.versionNumber}
                         </span>
                         {ver.atsScoreSnapshot && (
-                          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] font-bold bg-[#3F9F6B]/15 text-[#3F9F6B] px-1.5 py-0.5 rounded border border-[#3F9F6B]/25">
                             Score: {ver.atsScoreSnapshot}
                           </span>
                         )}
                       </div>
                       
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                      <p className="text-sm font-semibold text-[#F1F3F6] font-space mb-2">
                         {ver.description || "Auto-saved update"}
                       </p>
                       
-                      <p className="text-[10px] text-slate-400 mt-1">
+                      <p className="text-[10px] text-[#9AA7BE] mt-1 font-sans">
                         {new Date(ver.createdAt).toLocaleString()}
                       </p>
 
                       <button
                         onClick={() => handleRollback(ver.id)}
-                        className="mt-3 w-full flex items-center justify-center gap-1.5 py-1.5 bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-lg transition-colors"
+                        className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 bg-[#1E2E4F] hover:bg-[#1E2E4F]/85 text-xs font-semibold text-[#F1F3F6] border border-[#2C3E5E] rounded-lg transition-colors cursor-pointer"
                       >
                         <FaUndo size={10} /> Rollback to this Version
                       </button>

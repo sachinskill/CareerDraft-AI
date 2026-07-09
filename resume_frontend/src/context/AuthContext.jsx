@@ -57,6 +57,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const verifyEmail = async (email, otp) => {
+    setIsLoading(true);
+    try {
+      const res = await axiosInstance.post('/api/auth/verify-email', { email, otp });
+      const { token: _ignored, ...userData } = res.data;
+      setUser(userData);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error || 'Email verification failed' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendOtp = async (email) => {
+    try {
+      const res = await axiosInstance.post('/api/auth/resend-otp', { email });
+      return { success: true, message: res.data?.message };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error || 'Failed to resend code' };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    try {
+      const res = await axiosInstance.post('/api/auth/forgot-password', { email });
+      return { success: true, message: res.data?.message };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error || 'Failed to request reset' };
+    }
+  };
+
+  const resetPassword = async (email, token, newPassword) => {
+    try {
+      const res = await axiosInstance.post('/api/auth/reset-password', { email, token, newPassword });
+      return { success: true, message: res.data?.message };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.error || 'Password reset failed' };
+    }
+  };
+
   const logout = async () => {
     try {
       await axiosInstance.post('/api/auth/logout', {});
@@ -75,6 +116,10 @@ export const AuthProvider = ({ children }) => {
       register,
       logout,
       refreshUser,
+      verifyEmail,
+      resendOtp,
+      forgotPassword,
+      resetPassword,
     }}>
       {children}
     </AuthContext.Provider>
