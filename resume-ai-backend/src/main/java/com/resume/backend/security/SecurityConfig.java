@@ -48,6 +48,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/ats/upload", "/api/v1/ats/analyze", "/api/ats/upload", "/api/ats/analyze").permitAll()
                         // Legacy/AI generation endpoints
                         .requestMatchers("/api/v1/resume/generate", "/api/v1/resume/enhance", "/api/v1/resume/enhance-bullet").permitAll()
+                        // Admin Operations Dashboard — ROLE_ADMIN only
+                        // Backend enforces this; frontend route protection is supplementary only
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         // Secured SaaS endpoints
                         .requestMatchers("/api/resumes/**", "/api/subscriptions/**", "/api/dashboard/**").authenticated()
                         .requestMatchers("/api/payment/**", "/api/payments/**").authenticated()

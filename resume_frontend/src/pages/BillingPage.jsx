@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { FaCrown, FaCheck, FaChartBar, FaFileAlt, FaMagic, FaDownload, FaRocket } from "react-icons/fa";
 import UpgradeModal from "../components/UpgradeModal";
+import { usePremiumAccess } from "../hooks/usePremiumAccess";
 
 const LimitProgress = ({ title, icon: Icon, current, max, colorClass }) => {
   const pct = max === "Unlimited" ? 100 : Math.min(100, Math.round((current / max) * 100));

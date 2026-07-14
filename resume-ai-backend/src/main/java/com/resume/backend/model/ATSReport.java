@@ -20,6 +20,7 @@ public class ATSReport {
 
     @ManyToOne
     @JoinColumn(name = "resume_id")
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Resume resume;
 
     @ManyToOne

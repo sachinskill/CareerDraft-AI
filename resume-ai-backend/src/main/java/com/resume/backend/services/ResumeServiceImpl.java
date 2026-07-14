@@ -161,7 +161,7 @@ public class ResumeServiceImpl implements ResumeService {
     void enforceDataIntegrity(Map<String, Object> original, Map<String, Object> enhanced) {
         // Enforce top-level metadata strictly
         String[] strictKeys = { "personalInformation", "education", "projects", "certifications", "languages",
-                "interests" };
+                "interests", "skills" };
         for (String key : strictKeys) {
             if (original.containsKey(key)) {
                 enhanced.put(key, original.get(key));
@@ -198,6 +198,27 @@ public class ResumeServiceImpl implements ResumeService {
                 enhExp.add(mergedEntry);
             }
             enhanced.put("experience", enhExp);
+        }
+
+        // Preserve and update sections array for layout and section-level data compatibility
+        if (original.containsKey("sections") && original.get("sections") instanceof java.util.List) {
+            java.util.List<Map<String, Object>> origSections = (java.util.List<Map<String, Object>>) original.get("sections");
+            java.util.List<Map<String, Object>> enhSections = new java.util.ArrayList<>();
+
+            for (Map<String, Object> origSec : origSections) {
+                Map<String, Object> mergedSec = new HashMap<>(origSec);
+                String type = (String) origSec.get("type");
+
+                if ("summary".equals(type) && enhanced.containsKey("summary")) {
+                    mergedSec.put("data", enhanced.get("summary"));
+                } else if ("experience".equals(type) && enhanced.containsKey("experience")) {
+                    mergedSec.put("data", enhanced.get("experience"));
+                } else if ("skills".equals(type) && enhanced.containsKey("skills")) {
+                    mergedSec.put("data", enhanced.get("skills"));
+                }
+                enhSections.add(mergedSec);
+            }
+            enhanced.put("sections", enhSections);
         }
     }
 }

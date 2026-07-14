@@ -11,6 +11,7 @@ import { uploadResumeForATS, createPaymentOrder, verifyPayment, parseResumeText 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UpgradeModal from "../components/UpgradeModal";
+import { usePremiumAccess } from "../hooks/usePremiumAccess";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const scoreColor = (s) => s >= 80 ? "#3F9F6B" : s >= 60 ? "#DB9A3C" : "#E85D4E";
@@ -218,7 +219,9 @@ const ATSAnalysis = () => {
   const [activeStageIdx, setActiveStageIdx] = useState(0);
   const [remainingScans, setRemainingScans] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeContext, setUpgradeContext] = useState({ title: "", subtitle: "" });
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const { canAnalyzeATS, isPro } = usePremiumAccess();
   const fileInputRef = useRef(null);
 
   // Pre-auth state
@@ -264,8 +267,11 @@ const ATSAnalysis = () => {
     }
 
     // Proactively check limits for logged in free users
-    const isPro = user.isPro || user.role === "ROLE_PRO";
-    if (!isPro && user.scanCount >= 2) {
+    if (!canAnalyzeATS()) {
+      setUpgradeContext({
+        title: "Unlock Unlimited ATS Scans",
+        subtitle: "You have exhausted your free scans. Upgrade now to optimize unlimited resumes against target descriptions."
+      });
       setShowUpgradeModal(true);
       return;
     }
@@ -312,7 +318,14 @@ const ATSAnalysis = () => {
     } catch (error) {
       setShowLoadingStages(false);
       const msg = error.response?.data?.error || error.message || "";
-      if (msg.includes("Free limit") || msg.includes("Upgrade")) { setShowUpgradeModal(true); return; }
+      if (msg.includes("Free limit") || msg.includes("Upgrade")) { 
+        setUpgradeContext({
+          title: "Unlock Unlimited ATS Scans",
+          subtitle: "You have exhausted your free scans. Upgrade now to optimize unlimited resumes against target descriptions."
+        });
+        setShowUpgradeModal(true); 
+        return; 
+      }
       toast.error(msg || "Failed to analyse resume. Please try again.");
     } finally { 
       setIsAnalyzing(false); 
@@ -399,7 +412,6 @@ const ATSAnalysis = () => {
   };
 
   const rawA = atsResult?.atsAnalysis;
-  const isPro = user?.isPro || user?.role === "ROLE_PRO";
   const a = rawA;
 
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -483,7 +495,13 @@ const ATSAnalysis = () => {
             </div>
           </div>
           <button 
-            onClick={() => setShowUpgradeModal(true)} 
+            onClick={() => {
+              setUpgradeContext({
+                title: "Unlock Unlimited ATS Scans",
+                subtitle: "You have exhausted your free scans. Upgrade now to optimize unlimited resumes against target descriptions."
+              });
+              setShowUpgradeModal(true);
+            }} 
             className="bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-xs rounded-[6px] px-4 py-2 transition-all font-sans border-0 flex items-center gap-1.5 shrink-0 cursor-pointer"
           >
             <FaCrown /> Upgrade to Pro
@@ -492,7 +510,12 @@ const ATSAnalysis = () => {
       )}
 
       {/* Upgrade modal */}
-      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+        customTitle={upgradeContext.title}
+        customSubtitle={upgradeContext.subtitle}
+      />
 
       {/* ━━━━━━━━━━━━━━━━━━ RESULTS / SKELETONS / FORM ━━━━━━━━━━━━━━━━━━ */}
       {showLoadingStages && (
@@ -935,7 +958,13 @@ const ATSAnalysis = () => {
                           Unlock expert AI analysis, rewritten bullet points with metrics, and optimize your resume for specific job descriptions.
                         </p>
                         <button 
-                          onClick={() => setShowUpgradeModal(true)}
+                          onClick={() => {
+                            setUpgradeContext({
+                              title: "Unlock Unlimited ATS Scans",
+                              subtitle: "Unlock expert AI analysis, rewritten bullets with metrics, and optimize your resume for specific job descriptions."
+                            });
+                            setShowUpgradeModal(true);
+                          }}
                           className="bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-xs rounded-[6px] px-5 py-2.5 transition-all font-sans border-0 flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
                         >
                           <FaCrown /> Upgrade to Pro

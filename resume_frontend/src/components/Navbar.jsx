@@ -11,12 +11,14 @@ const AuthModal = ({ mode, onClose }) => {
   const [password, setPassword] = useState("");
   const [currentMode, setCurrentMode] = useState(mode);
   const [unverifiedEmailError, setUnverifiedEmailError] = useState(false);
+  const [formError, setFormError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) { toast.error("Please fill in all fields"); return; }
-    if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    setFormError(null);
+    if (!email || !password) { setFormError("Please fill in all fields"); return; }
+    if (password.length < 6) { setFormError("Password must be at least 6 characters"); return; }
     const fn = currentMode === "login" ? login : register;
     const result = await fn(email, password);
     if (result.success) {
@@ -32,7 +34,7 @@ const AuthModal = ({ mode, onClose }) => {
       if (currentMode === "login" && result.error === "EMAIL_NOT_VERIFIED") {
         setUnverifiedEmailError(true);
       } else {
-        toast.error(result.error);
+        setFormError(result.error);
       }
     }
   };
@@ -76,10 +78,10 @@ const AuthModal = ({ mode, onClose }) => {
 
           <form onSubmit={handleSubmit} className="space-y-3 font-sans">
             <input type="email" placeholder="Email address" value={email}
-              onChange={e => { setEmail(e.target.value); setUnverifiedEmailError(false); }}
+              onChange={e => { setEmail(e.target.value); setUnverifiedEmailError(false); setFormError(null); }}
               className="w-full text-sm bg-white border border-[#DDD5C4] rounded-[8px] p-2.5 outline-none focus:border-[#DB9A3C] text-[#1B2A4A] font-sans" required />
             <input type="password" placeholder="Password" value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={e => { setPassword(e.target.value); setFormError(null); }}
               className="w-full text-sm bg-white border border-[#DDD5C4] rounded-[8px] p-2.5 outline-none focus:border-[#DB9A3C] text-[#1B2A4A] font-sans" required minLength={6} />
             
             {currentMode === "login" && (
@@ -97,6 +99,12 @@ const AuthModal = ({ mode, onClose }) => {
               </div>
             )}
 
+            {formError && (
+              <div className="text-[#E85D4E] text-xs font-semibold mt-1 font-sans">
+                {formError}
+              </div>
+            )}
+
             <button type="submit" disabled={isLoading} className="w-full bg-[#DB9A3C] hover:bg-[#c4862f] active:scale-95 text-[#1B2A4A] font-semibold text-sm rounded-[6px] py-3 transition-all font-sans border-0 flex items-center justify-center gap-2 mt-2 cursor-pointer">
               {isLoading && <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
               {currentMode === "login" ? "Sign In" : "Create Account"}
@@ -110,7 +118,11 @@ const AuthModal = ({ mode, onClose }) => {
           <p className="text-center text-sm text-[#5A5347] font-sans">
             {currentMode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button className="text-[#DB9A3C] font-semibold hover:underline bg-transparent border-0 cursor-pointer"
-              onClick={() => { setCurrentMode(currentMode === "login" ? "register" : "login"); setUnverifiedEmailError(false); }}>
+              onClick={() => { 
+                setCurrentMode(currentMode === "login" ? "register" : "login"); 
+                setUnverifiedEmailError(false); 
+                setFormError(null); 
+              }}>
               {currentMode === "login" ? "Sign up" : "Sign in"}
             </button>
           </p>
@@ -151,6 +163,8 @@ function Navbar() {
     { to: "/about",           label: "About" },
     { to: "/services",        label: "Services" },
     { to: "/contact",         label: "Contact" },
+    // Admin link — only rendered for ROLE_ADMIN users
+    ...(user?.role === "ROLE_ADMIN" ? [{ to: "/admin", label: "⚙ Admin" }] : []),
   ];
 
   return (
@@ -197,7 +211,11 @@ function Navbar() {
                   <span className="hidden sm:block text-[#1B2A4A] font-semibold max-w-[120px] truncate">
                     {user?.email?.split("@")[0]}
                   </span>
-                  {(user?.isPro || user?.role === "ROLE_PRO") && <FaCrown className="text-[#DB9A3C] text-xs" />}
+                  {(user?.isPro || user?.role === "ROLE_PRO") && (
+                    <span className="bg-[#E8A33D] text-[#14213B] text-[8px] font-extrabold px-1.5 py-0.5 rounded-[3px] uppercase tracking-wider scale-95 shrink-0">
+                      PRO
+                    </span>
+                  )}
                 </button>
                 {dropdownOpen && (
                   <>
@@ -237,6 +255,12 @@ function Navbar() {
                           className="flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#1B2A4A] hover:bg-[#F4F0E8] transition-colors font-semibold">
                           Billing & Limits
                         </Link>
+                        {user?.role === "ROLE_ADMIN" && (
+                          <Link to="/admin" onClick={() => setDropdownOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#1B2A4A] hover:bg-[#F4F0E8] transition-colors font-semibold">
+                            ⚙ Admin Dashboard
+                          </Link>
+                        )}
                         <div className="h-px bg-[#DDD5C4] my-1" />
                         <button onClick={handleLogout}
                           className="w-full flex items-center gap-2 px-3 py-2 rounded-[6px] text-sm text-[#E85D4E] hover:bg-[#E85D4E]/10 border-0 bg-transparent transition-colors font-semibold text-left cursor-pointer">

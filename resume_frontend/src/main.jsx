@@ -16,6 +16,7 @@ import BillingPage from "./pages/BillingPage";
 import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import AdminDashboard from "./pages/AdminDashboard";
 import { Toaster } from "react-hot-toast";
 import { ResumeProvider } from "./context/ResumeContext";
 import { AuthProvider } from "./context/AuthContext";
@@ -41,6 +42,8 @@ createRoot(document.getElementById("root")).render(
             <Route path="verify-email" element={<VerifyEmail />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password" element={<ResetPassword />} />
+            {/* Admin Operations Dashboard — only visible/accessible to ROLE_ADMIN */}
+            <Route path="admin" element={<AdminDashboard />} />
           </Route>
         </Routes>
       </BrowserRouter>

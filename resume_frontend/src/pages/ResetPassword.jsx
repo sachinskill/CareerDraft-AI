@@ -44,7 +44,7 @@ const ResetPassword = () => {
     if (pwd.length >= 6) score += 1;
     if (pwd.length >= 10) score += 1;
     if (/\d/.test(pwd)) score += 1; // contains numbers
-    if (/[A-Z]/.test(pwd)) stroke = 1; // contains uppercase
+    if (/[A-Z]/.test(pwd)) score += 1; // contains uppercase
     if (/[^A-Za-z0-9]/.test(pwd)) score += 1; // contains special characters
 
     if (pwd.length < 6) {

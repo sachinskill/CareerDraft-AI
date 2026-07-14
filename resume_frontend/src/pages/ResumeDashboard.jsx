@@ -23,6 +23,7 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import UpgradeModal from "../components/UpgradeModal";
+import { usePremiumAccess } from "../hooks/usePremiumAccess";
 
 const ResumeDashboard = () => {
   const { user } = useAuth();
@@ -32,6 +33,8 @@ const ResumeDashboard = () => {
   const [resumes, setResumes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeContext, setUpgradeContext] = useState({ title: "", subtitle: "" });
+  const { canCreateResume, isPro } = usePremiumAccess();
   
   // Version history state
   const [selectedResumeForHistory, setSelectedResumeForHistory] = useState(null);
@@ -61,8 +64,11 @@ const ResumeDashboard = () => {
 
   const handleCreateResume = async () => {
     // Check free limit
-    const isPro = user?.isPro || user?.role === "ROLE_PRO";
-    if (!isPro && resumes.length >= 1) {
+    if (!canCreateResume(resumes.length)) {
+      setUpgradeContext({
+        title: "Unlock Unlimited Resumes",
+        subtitle: "Free accounts support 2 active resume drafts. Upgrade to design unlimited versions."
+      });
       setShowUpgradeModal(true);
       return;
     }
@@ -191,9 +197,13 @@ const ResumeDashboard = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            {!user?.isPro && (
+            {isPro ? (
+              <span className="text-xs font-semibold bg-[#E8A33D]/10 text-[#E8A33D] px-3 py-1.5 rounded-full border border-[#E8A33D]/20 font-sans flex items-center gap-1.5">
+                <FaCrown /> CareerDraft PRO • Unlimited
+              </span>
+            ) : (
               <span className="text-xs font-semibold bg-[#1E2E4F] text-[#E8A33D] px-3 py-1.5 rounded-full border border-[#2C3E5E] font-sans">
-                Resumes: {resumes.length}/1 draft
+                Resumes: {resumes.length}/2 drafts
               </span>
             )}
             <button
@@ -206,7 +216,12 @@ const ResumeDashboard = () => {
         </div>
 
         {/* Upgrade Modal */}
-        <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+        <UpgradeModal 
+          isOpen={showUpgradeModal} 
+          onClose={() => setShowUpgradeModal(false)} 
+          customTitle={upgradeContext.title}
+          customSubtitle={upgradeContext.subtitle}
+        />
 
         <div className="flex flex-col lg:flex-row gap-8">
           

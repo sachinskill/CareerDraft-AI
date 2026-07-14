@@ -31,6 +31,9 @@ public class EmailService {
     @Value("classpath:email/forgot-password.html")
     private Resource forgotPasswordResource;
 
+    @Value("classpath:email/welcome-pro.html")
+    private Resource welcomeProResource;
+
     public EmailService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("https://api.resend.com").build();
     }
@@ -84,6 +87,7 @@ public class EmailService {
      * Sends the verification email containing the OTP.
      */
     public void sendVerificationEmail(String toEmail, String otp) {
+        logger.info("Email verification OTP for {}: {}", toEmail, otp);
         String template = loadTemplate(verifyEmailResource);
         String htmlContent = template.replace("{{OTP}}", otp);
         sendEmail(toEmail, "Verify Your Email - CareerDraft AI", htmlContent);
@@ -96,5 +100,13 @@ public class EmailService {
         String template = loadTemplate(forgotPasswordResource);
         String htmlContent = template.replace("{{RESET_URL}}", resetUrl);
         sendEmail(toEmail, "Reset Your Password - CareerDraft AI", htmlContent);
+    }
+
+    /**
+     * Sends the Pro welcome email to upgraded users.
+     */
+    public void sendWelcomeProEmail(String toEmail) {
+        String template = loadTemplate(welcomeProResource);
+        sendEmail(toEmail, "Welcome to CareerDraft Pro! 🎉", template);
     }
 }

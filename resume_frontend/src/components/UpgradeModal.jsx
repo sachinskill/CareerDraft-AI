@@ -5,8 +5,9 @@ import { createPaymentOrder, verifyPayment } from "../api/ResumeService";
 import { useAuth } from "../context/AuthContext";
 
 const UpgradeModal = ({ isOpen, onClose, customTitle, customSubtitle }) => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -39,9 +40,9 @@ const UpgradeModal = ({ isOpen, onClose, customTitle, customSubtitle }) => {
             });
             toast.dismiss(verificationToast);
             if (res.success) {
+              await refreshUser();
               toast.success("🎉 Welcome to Pro! Your account has been upgraded successfully.");
-              onClose();
-              setTimeout(() => window.location.reload(), 1200);
+              setUpgradeSuccess(true);
             } else {
               toast.error("Payment verification failed. Please contact support.");
             }
@@ -73,6 +74,49 @@ const UpgradeModal = ({ isOpen, onClose, customTitle, customSubtitle }) => {
       setIsProcessingPayment(false);
     }
   };
+
+  if (upgradeSuccess) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1B2A4A]/50 backdrop-blur-sm animate-fadeIn">
+        <div className="relative w-full max-w-md overflow-hidden bg-[#FFFFFF] border border-[#D3D1C7] rounded-[12px] p-8 text-center shadow-none">
+          <div className="mx-auto flex items-center justify-center w-16 h-16 bg-[#3F9F6B]/10 rounded-full mb-4">
+            <FaCheckCircle className="text-[#3F9F6B] text-4xl" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#1B2A4A] font-space tracking-tight mb-2">
+            🎉 Welcome to CareerDraft Pro!
+          </h2>
+          <p className="text-sm text-[#4A5568] font-sans mb-6">
+            Your payment was verified. All premium features are now unlocked for lifetime!
+          </p>
+
+          <div className="bg-[#EDEFF2]/40 border border-[#D3D1C7] rounded-[8px] p-5 text-left mb-6 space-y-3.5 font-sans">
+            <div className="flex items-center gap-2.5 text-xs font-semibold text-[#1B2A4A]">
+              <span className="text-[#3F9F6B] font-bold text-sm">✓</span> Unlimited Resume Drafts Unlocked
+            </div>
+            <div className="flex items-center gap-2.5 text-xs font-semibold text-[#1B2A4A]">
+              <span className="text-[#3F9F6B] font-bold text-sm">✓</span> Unlimited ATS Analysis Unlocked
+            </div>
+            <div className="flex items-center gap-2.5 text-xs font-semibold text-[#1B2A4A]">
+              <span className="text-[#3F9F6B] font-bold text-sm">✓</span> Premium Templates Unlocked
+            </div>
+            <div className="flex items-center gap-2.5 text-xs font-semibold text-[#1B2A4A]">
+              <span className="text-[#3F9F6B] font-bold text-sm">✓</span> AI Enhancements Unlocked
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setUpgradeSuccess(false);
+              onClose();
+            }}
+            className="w-full bg-[#E8A33D] hover:bg-[#d69430] active:scale-95 text-[#14213B] font-bold py-3.5 rounded-[8px] text-sm transition-all border-0 cursor-pointer"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1B2A4A]/50 backdrop-blur-sm animate-fadeIn">

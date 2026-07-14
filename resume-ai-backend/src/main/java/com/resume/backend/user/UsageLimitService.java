@@ -12,9 +12,11 @@ public class UsageLimitService {
     private static final int FREE_SCAN_LIMIT = 2;
     
     private final UserRepository userRepository;
+    private final PremiumAccessService premiumAccessService;
     
-    public UsageLimitService(UserRepository userRepository) {
+    public UsageLimitService(UserRepository userRepository, PremiumAccessService premiumAccessService) {
         this.userRepository = userRepository;
+        this.premiumAccessService = premiumAccessService;
     }
     
     /**
@@ -25,8 +27,8 @@ public class UsageLimitService {
     @Transactional
     public int checkAndIncrementUsage(User user) {
         // Check if user has reached free limit
-        if (!user.getIsPro() && !"ROLE_PRO".equals(user.getRole()) && user.getScanCount() >= FREE_SCAN_LIMIT) {
-            logger.warn("User {} reached free limit: {}/{}", user.getEmail(), user.getScanCount(), FREE_SCAN_LIMIT);
+        if (!premiumAccessService.canAnalyzeATS(user)) {
+            logger.warn("User {} reached free limit: {}", user.getEmail(), user.getScanCount());
             throw new UsageLimitException("Free limit reached. Upgrade to Pro for unlimited scans.");
         }
         
@@ -46,8 +48,7 @@ public class UsageLimitService {
      */
     @Transactional
     public void checkAndIncrementEnhance(User user) {
-        boolean isPro = user.getIsPro() || "ROLE_PRO".equals(user.getRole());
-        if (!isPro && user.getEnhanceCount() >= 2) {
+        if (!premiumAccessService.canUseAiEnhance(user)) {
             logger.warn("User {} reached free enhancement limit: {}", user.getEmail(), user.getEnhanceCount());
             throw new UsageLimitException("Free limit reached. Upgrade to Pro for unlimited AI enhancements.");
         }
@@ -61,8 +62,7 @@ public class UsageLimitService {
      */
     @Transactional
     public void checkAndIncrementExport(User user) {
-        boolean isPro = user.getIsPro() || "ROLE_PRO".equals(user.getRole());
-        if (!isPro && user.getExportCount() >= 2) {
+        if (!premiumAccessService.canDownloadPdf(user)) {
             logger.warn("User {} reached free export limit: {}", user.getEmail(), user.getExportCount());
             throw new UsageLimitException("Free limit reached. Upgrade to Pro for unlimited downloads.");
         }
@@ -75,7 +75,7 @@ public class UsageLimitService {
      * Get remaining scans for user (for soft-limit display)
      */
     public int getRemainingScans(User user) {
-        if (user.getIsPro() || "ROLE_PRO".equals(user.getRole())) {
+        if (premiumAccessService.isPro(user)) {
             return -1; // Unlimited
         }
         return Math.max(0, FREE_SCAN_LIMIT - user.getScanCount());

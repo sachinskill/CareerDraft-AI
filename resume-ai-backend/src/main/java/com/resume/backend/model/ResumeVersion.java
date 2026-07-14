@@ -20,6 +20,7 @@ public class ResumeVersion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id", nullable = false)
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Resume resume;
 
     @Column(nullable = false)

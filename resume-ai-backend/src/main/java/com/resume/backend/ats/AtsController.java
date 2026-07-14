@@ -8,6 +8,7 @@ import com.resume.backend.ats.upload.UnsupportedFileTypeException;
 import com.resume.backend.user.User;
 import com.resume.backend.user.UsageLimitException;
 import com.resume.backend.user.UsageLimitService;
+import com.resume.backend.user.PremiumAccessService;
 import com.resume.backend.model.ParserCache;
 import com.resume.backend.repository.ParserCacheRepository;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ public class AtsController {
     private final UsageLimitService usageLimitService;
     private final AtsResultMapper resultMapper;
     private final ParserCacheRepository parserCacheRepository;
+    private final PremiumAccessService premiumAccessService;
 
     public AtsController(
             ResumeFileParserService fileParserService,
@@ -52,7 +54,8 @@ public class AtsController {
             PythonScoringClient pythonClient,
             UsageLimitService usageLimitService,
             AtsResultMapper resultMapper,
-            ParserCacheRepository parserCacheRepository) {
+            ParserCacheRepository parserCacheRepository,
+            PremiumAccessService premiumAccessService) {
         this.fileParserService = fileParserService;
         this.javaScorer = javaScorer;
         this.aiFeedbackService = aiFeedbackService;
@@ -60,6 +63,7 @@ public class AtsController {
         this.usageLimitService = usageLimitService;
         this.resultMapper = resultMapper;
         this.parserCacheRepository = parserCacheRepository;
+        this.premiumAccessService = premiumAccessService;
     }
 
     /**
@@ -146,7 +150,7 @@ public class AtsController {
                 }
             }
 
-            boolean isPro = currentUser != null && currentUser.getIsPro();
+            boolean isPro = premiumAccessService.isPro(currentUser);
             long processingTimeMs = System.currentTimeMillis() - startTime;
 
             // Lock and strip details for guest scans

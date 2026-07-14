@@ -7,6 +7,7 @@ import com.resume.backend.repository.ResumeRepository;
 import com.resume.backend.repository.ResumeVersionRepository;
 import com.resume.backend.user.User;
 import com.resume.backend.user.UserRepository;
+import com.resume.backend.user.PremiumAccessService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,15 +31,18 @@ public class SaaSResumeController {
     private final ResumeVersionRepository resumeVersionRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final PremiumAccessService premiumAccessService;
 
     public SaaSResumeController(ResumeRepository resumeRepository,
                                ResumeVersionRepository resumeVersionRepository,
                                UserRepository userRepository,
-                               ObjectMapper objectMapper) {
+                               ObjectMapper objectMapper,
+                               PremiumAccessService premiumAccessService) {
         this.resumeRepository = resumeRepository;
         this.resumeVersionRepository = resumeVersionRepository;
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
+        this.premiumAccessService = premiumAccessService;
     }
 
     /**
@@ -85,11 +89,17 @@ public class SaaSResumeController {
         }
 
         // Limit Check for Free Users
-        boolean isPro = currentUser.getIsPro() || "ROLE_PRO".equals(currentUser.getRole());
         long activeCount = resumeRepository.countByUserIdAndSoftDeletedFalse(currentUser.getId());
-        if (!isPro && activeCount >= FREE_RESUME_LIMIT) {
+        if (!premiumAccessService.canCreateResume(currentUser, (int) activeCount)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(error("Free tier limit reached. Upgrade to Pro to create more resumes."));
+        }
+
+        // Template Check
+        String selectedTemplate = (String) payload.get("selectedTemplate");
+        if (selectedTemplate != null && !premiumAccessService.canAccessTemplate(currentUser, selectedTemplate)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(error("The selected template requires Pro. Upgrade to use premium layout designs."));
         }
 
         try {
@@ -147,6 +157,14 @@ public class SaaSResumeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error("Access denied."));
         }
 
+        if (payload.containsKey("selectedTemplate")) {
+            String selectedTemplate = (String) payload.get("selectedTemplate");
+            if (selectedTemplate != null && !premiumAccessService.canAccessTemplate(currentUser, selectedTemplate)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(error("The selected template requires Pro. Upgrade to use premium layout designs."));
+            }
+        }
+
         try {
             if (payload.containsKey("originalJson")) {
                 resume.setOriginalJson(objectMapper.writeValueAsString(payload.get("originalJson")));
@@ -172,25 +190,31 @@ public class SaaSResumeController {
 
             resume = resumeRepository.save(resume);
 
-            // Compute next version number
-            List<ResumeVersion> versions = resumeVersionRepository.findByResumeIdOrderByVersionNumberDesc(id);
-            int nextVersionNum = versions.isEmpty() ? 1 : versions.get(0).getVersionNumber() + 1;
+            // Version snapshot: only for Pro users.
+            // Free users get a simple overwrite — no version history is stored.
+            if (premiumAccessService.isPro(currentUser)) {
+                // Compute next version number
+                List<ResumeVersion> versions = resumeVersionRepository.findByResumeIdOrderByVersionNumberDesc(id);
+                int nextVersionNum = versions.isEmpty() ? 1 : versions.get(0).getVersionNumber() + 1;
 
-            // Create new version snapshot
-            ResumeVersion version = new ResumeVersion();
-            version.setResume(resume);
-            version.setVersionNumber(nextVersionNum);
-            // Snapshot current status JSON
-            String activeContent = "ORIGINAL".equalsIgnoreCase(resume.getCurrentStatus()) ? resume.getOriginalJson() : resume.getImprovedJson();
-            version.setContentJson(activeContent != null ? activeContent : "{}");
-            version.setTemplate(resume.getSelectedTemplate());
-            version.setTheme(resume.getSelectedTheme());
-            version.setFont(resume.getSelectedFont());
-            version.setAtsScoreSnapshot(resume.getAtsScoreSnapshot());
-            version.setDescription((String) payload.getOrDefault("versionDescription", "Auto-saved update"));
+                // Create new version snapshot
+                ResumeVersion version = new ResumeVersion();
+                version.setResume(resume);
+                version.setVersionNumber(nextVersionNum);
+                // Snapshot current status JSON
+                String activeContent = "ORIGINAL".equalsIgnoreCase(resume.getCurrentStatus()) ? resume.getOriginalJson() : resume.getImprovedJson();
+                version.setContentJson(activeContent != null ? activeContent : "{}");
+                version.setTemplate(resume.getSelectedTemplate());
+                version.setTheme(resume.getSelectedTheme());
+                version.setFont(resume.getSelectedFont());
+                version.setAtsScoreSnapshot(resume.getAtsScoreSnapshot());
+                version.setDescription((String) payload.getOrDefault("versionDescription", "Auto-saved update"));
 
-            resumeVersionRepository.save(version);
-            logger.info("Updated resume {} to version {} for user {}", id, nextVersionNum, currentUser.getEmail());
+                resumeVersionRepository.save(version);
+                logger.info("Updated resume {} to version {} for Pro user {}", id, nextVersionNum, currentUser.getEmail());
+            } else {
+                logger.info("Updated resume {} for free user {} (no version snapshot)", id, currentUser.getEmail());
+            }
 
             return ResponseEntity.ok(resume);
         } catch (Exception e) {
@@ -258,6 +282,11 @@ public class SaaSResumeController {
         User currentUser = getCurrentUser();
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error("Authentication required."));
+        }
+
+        if (!premiumAccessService.canUseVersionRollback(currentUser)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(error("Version rollback is a Pro feature. Upgrade to unlock version history."));
         }
 
         Optional<Resume> optionalResume = resumeRepository.findByIdAndSoftDeletedFalse(id);

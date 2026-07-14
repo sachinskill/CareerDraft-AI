@@ -24,6 +24,7 @@ import { useResume } from "../context/ResumeContext";
 import { useAuth } from "../context/AuthContext";
 import { useReactToPrint } from "react-to-print";
 import UpgradeModal from "../components/UpgradeModal";
+import { usePremiumAccess } from "../hooks/usePremiumAccess";
 import DefaultTemplate from "../components/Templates/DefaultTemplate";
 import ModernTemplate from "../components/Templates/ModernTemplate";
 import MinimalistTemplate from "../components/Templates/MinimalistTemplate";
@@ -306,7 +307,18 @@ const ScoreRing = ({ score }) => {
 // ── Step: Basics ──────────────────────────────────────────────────────────────
 const StepBasics = ({ data, onChange }) => {
   const pi = data.personalInformation || {};
-  const set = (field, val) => onChange({ ...data, personalInformation: { ...pi, [field]: val } });
+  const set = (field, val) => {
+    onChange(prev => {
+      const currentPi = prev.personalInformation || {};
+      return {
+        ...prev,
+        personalInformation: {
+          ...currentPi,
+          [field]: val
+        }
+      };
+    });
+  };
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
@@ -347,20 +359,47 @@ const StepBasics = ({ data, onChange }) => {
   };
 
   const addLink = () => {
-    const links = Array.isArray(pi.links) ? [...pi.links] : [];
-    links.push({ platform: "LinkedIn", url: "" });
-    set("links", links);
+    onChange(prev => {
+      const currentPi = prev.personalInformation || {};
+      const links = Array.isArray(currentPi.links) ? [...currentPi.links] : [];
+      links.push({ platform: "LinkedIn", url: "" });
+      return {
+        ...prev,
+        personalInformation: {
+          ...currentPi,
+          links
+        }
+      };
+    });
   };
 
   const removeLink = (idx) => {
-    const links = Array.isArray(pi.links) ? pi.links.filter((_, i) => i !== idx) : [];
-    set("links", links);
+    onChange(prev => {
+      const currentPi = prev.personalInformation || {};
+      const links = Array.isArray(currentPi.links) ? currentPi.links.filter((_, i) => i !== idx) : [];
+      return {
+        ...prev,
+        personalInformation: {
+          ...currentPi,
+          links
+        }
+      };
+    });
   };
 
   const updateLink = (idx, field, val) => {
-    const links = Array.isArray(pi.links) ? [...pi.links] : [];
-    links[idx] = { ...links[idx], [field]: val };
-    set("links", links);
+    onChange(prev => {
+      const currentPi = prev.personalInformation || {};
+      const links = Array.isArray(currentPi.links) ? [...currentPi.links] : [];
+      links[idx] = { ...links[idx], [field]: val };
+      return {
+        ...prev,
+        personalInformation: {
+          ...currentPi,
+          links
+        }
+      };
+    });
   };
 
   const PLATFORMS = [
@@ -493,7 +532,7 @@ const StepSummary = ({ data, onChange, user, setShowUpgradeModal, refreshUser, r
       return;
     }
     const isPro = user.isPro || user.role === "ROLE_PRO";
-    if (!isPro && rewriteCount >= 3) {
+    if (!isPro) {
       if (setShowLimitUpgrade) {
         setShowLimitUpgrade(true);
       } else {
@@ -513,11 +552,32 @@ const StepSummary = ({ data, onChange, user, setShowUpgradeModal, refreshUser, r
         context = "professional summary: optimize alignment against standard resume indexing requirements and keyword density";
       }
 
-      const improved = await enhanceBullet(data.summary, context);
-      onChange({ ...data, summary: improved });
-      toast.success("Summary improved!");
-      if (setRewriteCount) setRewriteCount(p => p + 1);
-      refreshUser();
+      const res = await enhanceBullet(data.summary, context);
+      console.log("Verified AI Response Payload:", res);
+
+      // 1. Extract the text safely
+      const enhancedSummaryText = typeof res === "string" 
+        ? res 
+        : (res?.summary || res?.improved || res?.feedback || res?.data?.summary || "");
+
+      if (enhancedSummaryText.trim().length > 0) {
+        // 2. Use a functional updater so we always merge onto the *current* draft state,
+        //    not the stale `data` snapshot captured before the async API call started.
+        //    This prevents the "wipe" where a stale spread overwrites sections the user
+        //    filled in while the AI was running.
+        onChange(prev => ({
+          ...prev,
+          summary: enhancedSummaryText
+        }));
+        
+        toast.success("Summary enhanced successfully!");
+        if (setRewriteCount) setRewriteCount(p => p + 1);
+        // Note: refreshUser() intentionally NOT called here — it would update the `user`
+        // object reference which re-triggers the [resumeId, user] load effect and
+        // overwrites the enhanced draft with stale server data before the user saves.
+      } else {
+        console.warn("AI response did not contain a valid enhancement string.");
+      }
     } catch { toast.error("AI improvement failed"); }
     finally { setImproving(false); }
   };
@@ -572,22 +632,26 @@ const StepSkills = ({ data, onChange, atsContext }) => {
   const [level, setLevel] = useState("Intermediate");
   const add = () => {
     if (!input.trim()) return;
-    if (data.skills.some(s => s.title.toLowerCase() === input.trim().toLowerCase())) {
-      toast.error("Skill already exists");
-      return;
-    }
-    onChange({ ...data, skills: [...data.skills, { title: input.trim(), level }] });
-    setInput("");
+    onChange(prev => {
+      if (prev.skills.some(s => s.title.toLowerCase() === input.trim().toLowerCase())) {
+        toast.error("Skill already exists");
+        return prev;
+      }
+      setInput("");
+      return { ...prev, skills: [...prev.skills, { title: input.trim(), level }] };
+    });
   };
-  const remove = (i) => onChange({ ...data, skills: data.skills.filter((_, idx) => idx !== i) });
+  const remove = (i) => onChange(prev => ({ ...prev, skills: prev.skills.filter((_, idx) => idx !== i) }));
   
   const addSkillInstant = (skillName) => {
-    if (data.skills.some(s => s.title.toLowerCase() === skillName.toLowerCase())) {
-      toast.error("Skill already exists");
-      return;
-    }
-    onChange({ ...data, skills: [...data.skills, { title: skillName, level: "Intermediate" }] });
-    toast.success(`Added "${skillName}" to skills!`);
+    onChange(prev => {
+      if (prev.skills.some(s => s.title.toLowerCase() === skillName.toLowerCase())) {
+        toast.error("Skill already exists");
+        return prev;
+      }
+      toast.success(`Added "${skillName}" to skills!`);
+      return { ...prev, skills: [...prev.skills, { title: skillName, level: "Intermediate" }] };
+    });
   };
 
   const missingSkills = atsContext?.missingSkills || atsContext?.atsAnalysis?.categorizedMissingSkills || atsContext?.atsAnalysis?.missingKeywords || [];
@@ -670,12 +734,14 @@ const StepSkills = ({ data, onChange, atsContext }) => {
 // ── Step: Experience ──────────────────────────────────────────────────────────
 const StepExperience = ({ data, onChange, user, setShowUpgradeModal, refreshUser, rewriteCount = 0, setRewriteCount, setShowLimitUpgrade }) => {
   const [improving, setImproving] = useState({});
-  const add = () => onChange({ ...data, experience: [...data.experience, { title: "", company: "", startDate: "", endDate: "", description: "" }] });
-  const remove = (i) => onChange({ ...data, experience: data.experience.filter((_, idx) => idx !== i) });
+  const add = () => onChange(prev => ({ ...prev, experience: [...prev.experience, { title: "", company: "", startDate: "", endDate: "", description: "" }] }));
+  const remove = (i) => onChange(prev => ({ ...prev, experience: prev.experience.filter((_, idx) => idx !== i) }));
   const update = (i, field, val) => {
-    const exp = [...data.experience];
-    exp[i] = { ...exp[i], [field]: val };
-    onChange({ ...data, experience: exp });
+    onChange(prev => {
+      const exp = [...prev.experience];
+      exp[i] = { ...exp[i], [field]: val };
+      return { ...prev, experience: exp };
+    });
   };
   const improve = async (i, enhanceType) => {
     if (!user) {
@@ -683,7 +749,7 @@ const StepExperience = ({ data, onChange, user, setShowUpgradeModal, refreshUser
       return;
     }
     const isPro = user.isPro || user.role === "ROLE_PRO";
-    if (!isPro && rewriteCount >= 3) {
+    if (!isPro) {
       if (setShowLimitUpgrade) {
         setShowLimitUpgrade(true);
       } else {
@@ -719,7 +785,7 @@ const StepExperience = ({ data, onChange, user, setShowUpgradeModal, refreshUser
           setImproving(p => ({ ...p, [i]: false }));
           toast.success("Description improved!");
           if (setRewriteCount) setRewriteCount(p => p + 1);
-          refreshUser();
+          // Note: refreshUser() intentionally NOT called here — same reason as StepSummary.
         }
       }, 30);
     } catch { 
@@ -798,12 +864,14 @@ const StepExperience = ({ data, onChange, user, setShowUpgradeModal, refreshUser
 // ── Step: Education ───────────────────────────────────────────────────────────
 const StepEducation = ({ data, onChange }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
-  const add = () => onChange({ ...data, education: [...data.education, { degree: "", institution: "", startDate: "", endDate: "", description: "" }] });
-  const remove = (i) => onChange({ ...data, education: data.education.filter((_, idx) => idx !== i) });
+  const add = () => onChange(prev => ({ ...prev, education: [...prev.education, { degree: "", institution: "", startDate: "", endDate: "", description: "" }] }));
+  const remove = (i) => onChange(prev => ({ ...prev, education: prev.education.filter((_, idx) => idx !== i) }));
   const update = (i, field, val) => {
-    const edu = [...data.education];
-    edu[i] = { ...edu[i], [field]: val };
-    onChange({ ...data, education: edu });
+    onChange(prev => {
+      const edu = [...prev.education];
+      edu[i] = { ...edu[i], [field]: val };
+      return { ...prev, education: edu };
+    });
   };
 
   const toggleExpand = (idx) => {
@@ -874,12 +942,14 @@ const StepEducation = ({ data, onChange }) => {
 // ── Step: Projects ────────────────────────────────────────────────────────────
 const StepProjects = ({ data, onChange, user, setShowUpgradeModal, refreshUser }) => {
   const [improving, setImproving] = useState({});
-  const add = () => onChange({ ...data, projects: [...data.projects, { title: "", description: "", link: "" }] });
-  const remove = (i) => onChange({ ...data, projects: data.projects.filter((_, idx) => idx !== i) });
+  const add = () => onChange(prev => ({ ...prev, projects: [...prev.projects, { title: "", description: "", link: "" }] }));
+  const remove = (i) => onChange(prev => ({ ...prev, projects: prev.projects.filter((_, idx) => idx !== i) }));
   const update = (i, field, val) => {
-    const proj = [...data.projects];
-    proj[i] = { ...proj[i], [field]: val };
-    onChange({ ...data, projects: proj });
+    onChange(prev => {
+      const proj = [...prev.projects];
+      proj[i] = { ...proj[i], [field]: val };
+      return { ...prev, projects: proj };
+    });
   };
   const improve = async (i, enhanceType) => {
     if (!user) {
@@ -887,7 +957,7 @@ const StepProjects = ({ data, onChange, user, setShowUpgradeModal, refreshUser }
       return;
     }
     const isPro = user.isPro || user.role === "ROLE_PRO";
-    if (!isPro && user.enhanceCount >= 2) {
+    if (!isPro) {
       setShowUpgradeModal(true);
       return;
     }
@@ -907,7 +977,7 @@ const StepProjects = ({ data, onChange, user, setShowUpgradeModal, refreshUser }
       const improved = await enhanceBullet(desc, context);
       update(i, "description", improved);
       toast.success("Description improved!");
-      refreshUser();
+      // Note: refreshUser() intentionally NOT called here — same reason as StepSummary.
     } catch { toast.error("AI improvement failed"); }
     finally { setImproving(p => ({ ...p, [i]: false })); }
   };
@@ -2165,6 +2235,22 @@ const GenerateResume = () => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeContext, setUpgradeContext] = useState({ title: "", subtitle: "" });
+  const { isPro, canUseAiEnhance, canDownloadPdf } = usePremiumAccess();
+  const hasLoadedRef = useRef(false);
+  // Guard: tracks whether the backend resume for the current resumeId has already been
+  // fetched. Prevents the [resumeId, user] effect from re-running every time refreshUser()
+  // is called (which creates a new `user` reference and would otherwise overwrite in-memory
+  // AI-enhanced draft data with stale server data).
+  const hasFetchedResumeRef = useRef(false);
+
+  const triggerUpgradeForAi = () => {
+    setUpgradeContext({
+      title: "Unlock AI Resume Enhancements",
+      subtitle: "Free trial covers 2 enhancements. Upgrade to run unlimited AI optimizations."
+    });
+    setShowUpgradeModal(true);
+  };
 
   // Dynamic steps config driven by draft.sections
   const steps = useMemo(() => {
@@ -2228,16 +2314,28 @@ const GenerateResume = () => {
     return () => clearTimeout(t);
   }, [draft]);
 
+  // Reset load trackers when resume ID changes
+  useEffect(() => {
+    hasLoadedRef.current = false;
+    hasFetchedResumeRef.current = false;
+  }, [resumeId]);
+
   // Sync context changes to draft (e.g. on loading from backend)
   useEffect(() => {
-    if (resumeData && resumeId) {
+    if (resumeData && resumeId && !hasLoadedRef.current) {
       setDraft(normalizeResumeData(resumeData));
+      hasLoadedRef.current = true;
     }
   }, [resumeData, resumeId]);
 
-  // Load resume by ID from backend if present
+  // Load resume by ID from backend if present.
+  // IMPORTANT: guarded by hasFetchedResumeRef so this only runs once per resumeId,
+  // not every time `user` gets a new reference (e.g. after refreshUser() is called
+  // following an AI enhance action — without this guard the effect re-ran and
+  // overwrote the in-memory enhanced draft with stale server data).
   useEffect(() => {
-    if (resumeId && user) {
+    if (resumeId && user && !hasFetchedResumeRef.current) {
+      hasFetchedResumeRef.current = true;
       const loadResume = async () => {
         try {
           const res = await getResumeById(resumeId);
@@ -2276,21 +2374,25 @@ const GenerateResume = () => {
     const toastId = toast.loading("Saving resume to cloud...");
     try {
       if (resumeId) {
-        // Update existing
-        const versionDesc = window.prompt("Enter version details / description (optional):") || "Updated resume details";
+        // ── UPDATE existing resume ─────────────────────────────────────────
+        // Always UPDATE the same resume record. Never create a new one here.
+        // Pro users: the backend automatically creates a version snapshot.
+        // Free users: the backend silently overwrites the existing record.
+        // The window.prompt() was removed — it blocked the JS thread, caused
+        // React state inconsistency, and is not needed for correct versioning.
         await updateResume(resumeId, {
           originalJson: draft,
           improvedJson: draft,
           currentStatus: "ORIGINAL",
           selectedTemplate,
-          versionDescription: versionDesc,
+          versionDescription: `Saved on ${new Date().toLocaleString()}`,
         });
-        toast.success("Resume saved successfully & new version pushed!", { id: toastId });
+        toast.success("Changes saved!", { id: toastId });
       } else {
-        // Create new
-        const isPro = user?.isPro || user?.role === "ROLE_PRO";
+        // ── CREATE new resume (only when no resumeId exists) ───────────────
+        const isProUser = user?.isPro || user?.role === "ROLE_PRO";
         const existingResumes = await getMyResumes();
-        if (!isPro && existingResumes.length >= 1) {
+        if (!isProUser && existingResumes.length >= 1) {
           toast.dismiss(toastId);
           toast.error("Free limit reached. Upgrade to Pro to save multiple resumes.");
           return;
@@ -2319,32 +2421,25 @@ const GenerateResume = () => {
       toast.error("Please sign in or register to export your resume.");
       return;
     }
-    const isPro = user.isPro || user.role === "ROLE_PRO";
-    if (!isPro && user.exportCount >= 2) {
-      setShowUpgradeModal(true);
-      return;
-    }
-    const toastId = toast.loading("Processing export permission...");
+    const toastId = toast.loading("Processing export...");
     try {
       await trackExport();
       await refreshUser();
-      toast.dismiss(toastId);
-      triggerPrint();
     } catch (e) {
-      toast.dismiss(toastId);
-      const msg = e.response?.data?.error || e.message;
-      if (msg.includes("Free limit") || msg.includes("limit reached")) {
-        setShowUpgradeModal(true);
-      } else {
-        toast.error("Failed to track export: " + msg);
-      }
+      console.warn("Non-critical: Failed to track export limit: ", e);
     }
+    toast.dismiss(toastId);
+    triggerPrint();
   };
 
   // AI generate from prompt
   const handleAiGenerate = async () => {
     if (!user) {
       toast.error("Please sign in or register to use AI features.");
+      return;
+    }
+    if (!canUseAiEnhance()) {
+      triggerUpgradeForAi();
       return;
     }
     if (!aiPrompt.trim()) { toast.error("Describe yourself first"); return; }
@@ -2368,9 +2463,8 @@ const GenerateResume = () => {
       toast.error("Please sign in or register to use AI features.");
       return;
     }
-    const isPro = user.isPro || user.role === "ROLE_PRO";
-    if (!isPro && user.enhanceCount >= 2) {
-      setShowUpgradeModal(true);
+    if (!canUseAiEnhance()) {
+      triggerUpgradeForAi();
       return;
     }
     setAiLoading(true);
@@ -2378,8 +2472,32 @@ const GenerateResume = () => {
     try {
       const res = await enhanceResume(draft);
       if (res?.data) { 
-        const normalized = normalizeResumeData({ ...draft, ...res.data });
-        setDraft(normalized); 
+        setDraft(prevDraft => {
+          console.log("AI Enhance Raw Data Payload:", res.data);
+          if (!res.data) return prevDraft;
+
+          // 1. Handle case if backend directly returns the string or text field value
+          if (typeof res.data === "string" && res.data.trim().length > 0) {
+            return {
+              ...prevDraft,
+              summary: res.data
+            };
+          }
+
+          // 2. Deep target merge without structural destruction
+          const nextDraft = {
+            ...prevDraft,
+            // Update top-level fields only if they are present and valid in response
+            summary: res.data.summary && res.data.summary.trim().length > 0 ? res.data.summary : prevDraft.summary,
+            skills: Array.isArray(res.data.skills) && res.data.skills.length > 0 ? res.data.skills : prevDraft.skills,
+            experience: Array.isArray(res.data.experience) && res.data.experience.length > 0 ? res.data.experience : prevDraft.experience,
+            education: Array.isArray(res.data.education) && res.data.education.length > 0 ? res.data.education : prevDraft.education,
+            projects: Array.isArray(res.data.projects) && res.data.projects.length > 0 ? res.data.projects : prevDraft.projects,
+          };
+
+          return nextDraft; // Direct return, bypass normalizer rules completely
+        });
+        
         toast.success("Resume enhanced!", { id: tid }); 
         refreshUser();
       }
@@ -2413,7 +2531,7 @@ const GenerateResume = () => {
               data={draft} 
               onChange={setDraft} 
               user={user} 
-              setShowUpgradeModal={setShowUpgradeModal} 
+              setShowUpgradeModal={triggerUpgradeForAi} 
               refreshUser={refreshUser} 
             />
           );
@@ -2431,7 +2549,7 @@ const GenerateResume = () => {
               data={draft} 
               onChange={setDraft} 
               user={user} 
-              setShowUpgradeModal={setShowUpgradeModal} 
+              setShowUpgradeModal={triggerUpgradeForAi} 
               refreshUser={refreshUser} 
             />
           );
@@ -2448,7 +2566,7 @@ const GenerateResume = () => {
               data={draft} 
               onChange={setDraft} 
               user={user} 
-              setShowUpgradeModal={setShowUpgradeModal} 
+              setShowUpgradeModal={triggerUpgradeForAi} 
               refreshUser={refreshUser} 
             />
           );
@@ -2523,7 +2641,7 @@ const GenerateResume = () => {
       {/* Top bar */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-5 py-3 flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => { clearResumeData(); setShowAiPrompt(true); setDraft(EMPTY); }}
+          <button onClick={() => { clearResumeData(); setShowAiPrompt(true); setDraft(EMPTY); setSearchParams({}); }}
             className="btn-ghost-light text-sm">← New</button>
           <div className="hidden sm:flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -2687,7 +2805,8 @@ const GenerateResume = () => {
 
       {/* Mobile Floating Action Button */}
       <div className="lg:hidden fixed bottom-6 right-6 z-40">
-        <button         onClick={() => setMobilePreviewOpen(true)}
+        <button
+         onClick={() => setMobilePreviewOpen(true)}
           className="btn btn-primary shadow-2xl flex items-center gap-2 rounded-full px-5 py-3 h-auto"
         >
           <FaEye /> Preview Resume
@@ -2722,7 +2841,12 @@ const GenerateResume = () => {
         </div>
       )}
 
-      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      <UpgradeModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+        customTitle={upgradeContext.title}
+        customSubtitle={upgradeContext.subtitle}
+      />
     </div>
   );
 };

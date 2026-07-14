@@ -20,13 +20,16 @@ public class PaymentVerificationService {
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final com.resume.backend.services.EmailService emailService;
 
     public PaymentVerificationService(UserRepository userRepository,
                                       PaymentRepository paymentRepository,
-                                      SubscriptionRepository subscriptionRepository) {
+                                      SubscriptionRepository subscriptionRepository,
+                                      com.resume.backend.services.EmailService emailService) {
         this.userRepository = userRepository;
         this.paymentRepository = paymentRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.emailService = emailService;
     }
 
     /**
@@ -70,6 +73,13 @@ public class PaymentVerificationService {
         user.setRole("ROLE_PRO");
         userRepository.save(user);
 
+        // Send Welcome Pro email
+        try {
+            emailService.sendWelcomeProEmail(user.getEmail());
+        } catch (Exception e) {
+            logger.error("Failed to send Welcome Pro email to user {}", user.getEmail(), e);
+        }
+
         // Create or update subscription
         Subscription subscription = new Subscription();
         subscription.setUser(user);
@@ -78,7 +88,7 @@ public class PaymentVerificationService {
         subscription.setStatus("ACTIVE");
         subscription.setPlanType("PRO");
         subscription.setStartDate(LocalDateTime.now());
-        subscription.setEndDate(LocalDateTime.now().plusMonths(1));
+        subscription.setEndDate(null); // Lifetime purchase: no expiry date
         subscriptionRepository.save(subscription);
 
         logger.info("Successfully upgraded user {} (ID: {}) to PRO via webhook payment/order: {}", 
