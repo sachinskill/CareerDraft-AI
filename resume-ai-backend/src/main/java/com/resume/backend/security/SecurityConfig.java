@@ -45,14 +45,19 @@ public class SecurityConfig {
                         // Public Razorpay Webhook endpoints
                         .requestMatchers("/api/payment/webhook", "/api/payments/webhook").permitAll()
                         // Public ATS upload/analyze for guest scans
-                        .requestMatchers("/api/v1/ats/upload", "/api/v1/ats/analyze", "/api/ats/upload", "/api/ats/analyze").permitAll()
+                        .requestMatchers("/api/v1/ats/upload", "/api/v1/ats/analyze", "/api/ats/upload",
+                                "/api/ats/analyze")
+                        .permitAll()
                         // Legacy/AI generation endpoints
-                        .requestMatchers("/api/v1/resume/generate", "/api/v1/resume/enhance", "/api/v1/resume/enhance-bullet").permitAll()
+                        .requestMatchers("/api/v1/resume/generate", "/api/v1/resume/enhance",
+                                "/api/v1/resume/enhance-bullet")
+                        .permitAll()
                         // Admin Operations Dashboard — ROLE_ADMIN only
                         // Backend enforces this; frontend route protection is supplementary only
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         // Secured SaaS endpoints
-                        .requestMatchers("/api/resumes/**", "/api/subscriptions/**", "/api/dashboard/**").authenticated()
+                        .requestMatchers("/api/resumes/**", "/api/subscriptions/**", "/api/dashboard/**")
+                        .authenticated()
                         .requestMatchers("/api/payment/**", "/api/payments/**").authenticated()
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -63,7 +68,11 @@ public class SecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        List<String> origins = List.of(allowedOriginsRaw.split(","));
+        // Direct production whitelist without env dependency
+        List<String> origins = List.of(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://career-draft-ai.vercel.app");
 
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(origins);
