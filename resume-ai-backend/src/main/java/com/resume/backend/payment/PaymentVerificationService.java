@@ -68,9 +68,8 @@ public class PaymentVerificationService {
         payment.setStatus("SUCCESS");
         paymentRepository.save(payment);
 
-        // Update User role and Pro status
+        // Update User Pro status (preserve role)
         user.setIsPro(true);
-        user.setRole("ROLE_PRO");
         userRepository.save(user);
 
         // Send Welcome Pro email

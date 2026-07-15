@@ -31,13 +31,26 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
     // ── Admin: paginated search ───────────────────────────────────────────────
 
     /**
+     * Fetch all payments with their users eagerly in one query.
+     */
+    @Query(value = "SELECT p FROM Payment p JOIN FETCH p.user",
+           countQuery = "SELECT COUNT(p) FROM Payment p")
+    Page<Payment> findAll(Pageable pageable);
+
+    /**
      * Search payments by user email (partial), payment ID, or status.
      * SQL: SELECT p FROM payments p JOIN users u ON p.user_id = u.id
      *      WHERE LOWER(u.email) LIKE %term% OR LOWER(p.paymentId) LIKE %term%
      *            OR LOWER(p.status) LIKE %term%
      */
-    @Query("""
-            SELECT p FROM Payment p
+    @Query(value = """
+            SELECT p FROM Payment p JOIN FETCH p.user
+            WHERE LOWER(p.user.email) LIKE LOWER(CONCAT('%', :term, '%'))
+               OR (p.paymentId IS NOT NULL AND LOWER(p.paymentId) LIKE LOWER(CONCAT('%', :term, '%')))
+               OR LOWER(p.status) LIKE LOWER(CONCAT('%', :term, '%'))
+            """,
+           countQuery = """
+            SELECT COUNT(p) FROM Payment p
             WHERE LOWER(p.user.email) LIKE LOWER(CONCAT('%', :term, '%'))
                OR (p.paymentId IS NOT NULL AND LOWER(p.paymentId) LIKE LOWER(CONCAT('%', :term, '%')))
                OR LOWER(p.status) LIKE LOWER(CONCAT('%', :term, '%'))

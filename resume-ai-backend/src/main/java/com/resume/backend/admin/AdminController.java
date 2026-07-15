@@ -102,7 +102,7 @@ public class AdminController {
         if (!isAdmin()) return forbidden();
 
         long totalUsers = userRepository.countBySoftDeletedFalse();
-        long proUsers   = userRepository.countByRoleAndSoftDeletedFalse("ROLE_PRO");
+        long proUsers   = userRepository.countByIsProAndSoftDeletedFalse(true);
         // Derived — avoids inconsistency from the dual is_pro/role fields.
         // Total and Pro are the source of truth; Free is always consistent with them.
         long freeUsers  = totalUsers - proUsers;
@@ -228,7 +228,7 @@ public class AdminController {
         }
         User user = opt.get();
         user.setIsPro(true);
-        user.setRole("ROLE_PRO");
+        // Preserve user's existing role (Admin, User, Free, etc.)
         userRepository.save(user);
 
         logger.info("Admin {} granted Pro to user {}", currentAdminEmail(), user.getEmail());
@@ -250,7 +250,10 @@ public class AdminController {
         }
         User user = opt.get();
         user.setIsPro(false);
-        user.setRole("ROLE_FREE");
+        // Only reset the role if it was specifically 'ROLE_PRO' to preserve ROLE_ADMIN / ROLE_FREE / etc.
+        if ("ROLE_PRO".equals(user.getRole())) {
+            user.setRole("ROLE_FREE");
+        }
         userRepository.save(user);
 
         logger.info("Admin {} revoked Pro from user {}", currentAdminEmail(), user.getEmail());
@@ -312,6 +315,7 @@ public class AdminController {
      * Read-only — no mutations.
      */
     @GetMapping("/payments")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<?> getPayments(
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "0") int page,

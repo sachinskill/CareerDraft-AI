@@ -24,6 +24,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /** Total users with a specific role (e.g. ROLE_PRO). */
     long countByRoleAndSoftDeletedFalse(String role);
 
+    /** Total users with a specific isPro status. */
+    long countByIsProAndSoftDeletedFalse(Boolean isPro);
+
     /** Users registered since a given timestamp (today midnight). */
     @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :since AND u.softDeleted = false")
     long countRegisteredToday(@Param("since") LocalDateTime since);
