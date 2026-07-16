@@ -4,7 +4,7 @@ import { useResume } from "../context/ResumeContext";
 import { TEMPLATES } from "../templates/templateConfig";
 import DynamicTemplate from "../templates/DynamicTemplate";
 import { PREVIEW_DATA } from "../templates/templatePreviewData";
-import { FaCheck, FaSearch, FaArrowRight, FaMagic } from "react-icons/fa";
+import { FaCheck, FaSearch, FaArrowRight, FaMagic, FaCrown } from "react-icons/fa";
 
 // ── Category Filters ─────────────────────────────────────────────────────────
 const CATEGORY_FILTERS = [
@@ -39,11 +39,20 @@ const TemplateCard = ({ template, isSelected, onSelect }) => {
     return () => observer.disconnect();
   }, []);
 
+  const isPremium = ["executive", "sidebar-modern", "elegant"].includes(template.id);
+
   return (
     <div 
       className="group relative flex flex-col cursor-pointer"
       onClick={() => onSelect(template)}
     >
+      {/* Premium indicator */}
+      {isPremium && (
+        <div className="absolute top-2.5 left-2.5 z-30 flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#E8A33D] text-[#14213B] text-[8px] font-extrabold uppercase tracking-wider shadow-md">
+          <FaCrown size={8} />
+          <span>PRO</span>
+        </div>
+      )}
       {/* Selected indicator */}
       {isSelected && (
         <div className="absolute top-2.5 right-2.5 z-30 w-6 h-6 rounded-full bg-[#DB9A3C] flex items-center justify-center shadow-md border border-white">

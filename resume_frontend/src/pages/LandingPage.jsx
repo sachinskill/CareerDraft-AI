@@ -171,11 +171,11 @@ const LandingPage = () => {
                 Every resume is scored against real ATS parsing rules before you send it — not after a rejection.
               </p>
               <div className="flex flex-wrap gap-4 items-center">
-                <Link to="/templates?mode=ai" className="bg-[var(--signal-amber)] text-[var(--ink-navy)] font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-[#c4862f] active:scale-95 font-sans">
-                  Generate with AI
+                <Link to="/templates" className="bg-[var(--signal-amber)] text-[var(--ink-navy)] font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-[#c4862f] active:scale-95 font-sans">
+                  Create Resume
                 </Link>
-                <Link to="/templates?mode=scratch" className="bg-transparent border border-[var(--border-hairline)] text-[var(--ink-navy)] font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-[var(--paper)]/55 active:scale-95 font-sans">
-                  Start from Scratch
+                <Link to="/ats-analysis" className="bg-transparent border border-[var(--border-hairline)] text-[var(--ink-navy)] font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-[var(--paper)]/55 active:scale-95 font-sans">
+                  Analyse Resume
                 </Link>
               </div>
               <p className="text-[12px] text-[var(--text-secondary)] font-sans mt-3">
@@ -608,11 +608,11 @@ const LandingPage = () => {
             Upload your resume now and see your ATS score in 30 seconds.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to="/templates?mode=ai" className="bg-[var(--signal-amber)] text-[var(--ink-navy)] font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-[#c4862f] active:scale-95 font-sans">
-              Generate with AI
+            <Link to="/templates" className="bg-[var(--signal-amber)] text-[var(--ink-navy)] font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-[#c4862f] active:scale-95 font-sans">
+              Create Resume
             </Link>
-            <Link to="/templates?mode=scratch" className="bg-transparent border border-white text-white font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-white/10 active:scale-95 font-sans">
-              Start from Scratch
+            <Link to="/ats-analysis" className="bg-transparent border border-white text-white font-semibold text-sm rounded-[8px] px-6 py-3.5 transition-all hover:bg-white/10 active:scale-95 font-sans">
+              Analyse Resume
             </Link>
           </div>
         </div>
