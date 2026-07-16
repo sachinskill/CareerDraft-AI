@@ -193,16 +193,19 @@ const LandingPage = () => {
                   <div className="w-2.5 h-2.5 rounded-full bg-[#E8A33D]/60" />
                   <div className="w-2.5 h-2.5 rounded-full bg-[#3F9F6B]/60" />
                   <div className="ml-4 bg-white/70 border border-[var(--border-hairline)]/40 rounded-[4px] text-[9px] text-[var(--text-secondary)] px-4 py-0.5 w-44 text-center truncate">
-                    app.resumemaker.com/ats-score
+                    app.careerdraft.com/ats-score
                   </div>
                 </div>
                 {/* Screenshot */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--paper)]">
                   {/* Scanning scan line overlaying the image */}
                   <div className="absolute left-0 right-0 h-[2px] bg-[var(--signal-amber)] animate-scan pointer-events-none z-10" />
-                  <img 
-                    src="/images/resume_ats_dashboard.png" 
-                    alt="CareerDraft Dashboard Overview" 
+                  <video 
+                    src="/videos/Career_Draft.mp4" 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                   />
                 </div>
