@@ -22,7 +22,7 @@ function About() {
         >
           <CardCorners />
           <span className="text-[#DB9A3C] font-mono-score text-xs uppercase tracking-wider mb-2 block">Our Mission</span>
-          <h1 className="text-3xl font-semibold text-[#1B2A4A] font-space tracking-tight mb-6">About AI Resume Maker</h1>
+          <h1 className="text-3xl font-semibold text-[#1B2A4A] font-space tracking-tight mb-6">About CareerDraft</h1>
           <p className="text-sm font-sans text-[#5A5347] leading-relaxed mb-6">
             We believe the recruitment process should be transparent. Millions of qualified job seekers are filtered out by automated Application Tracking Systems (ATS) before a human recruiter ever sees their credentials. 
           </p>

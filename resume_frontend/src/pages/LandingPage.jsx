@@ -202,7 +202,7 @@ const LandingPage = () => {
                   <div className="absolute left-0 right-0 h-[2px] bg-[var(--signal-amber)] animate-scan pointer-events-none z-10" />
                   <img 
                     src="/images/resume_ats_dashboard.png" 
-                    alt="AI Resume Maker Dashboard Overview" 
+                    alt="CareerDraft Dashboard Overview" 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                   />
                 </div>
@@ -620,7 +620,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
             <div>
-              <span className="font-space font-medium text-lg text-[var(--ink-navy)]">AI Resume Maker</span>
+              <span className="font-space font-medium text-lg text-[var(--ink-navy)]">CareerDraft</span>
               <p className="text-xs text-[var(--text-secondary)] font-sans mt-2 leading-relaxed">
                 Build, analyze, and optimize your resume with AI.
               </p>
@@ -642,7 +642,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="mt-8 pt-4 border-t border-[var(--border-hairline)] text-xs text-[var(--text-secondary)] text-center font-sans">
-            {new Date().getFullYear()} AI Resume Maker. All rights reserved.
+            {new Date().getFullYear()} CareerDraft. All rights reserved.
           </div>
         </div>
       </footer>

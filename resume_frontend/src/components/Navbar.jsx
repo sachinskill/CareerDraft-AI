@@ -179,13 +179,12 @@ function Navbar() {
               onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
               {menuOpen ? <FaTimes size={16} /> : <FaBars size={16} />}
             </button>
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-[6px] bg-[#1B2A4A] flex items-center justify-center">
-                <span className="text-white text-xs font-bold font-mono">AI</span>
-              </div>
-              <span className="font-semibold text-[#1B2A4A] text-base hidden sm:block font-space">
-                Resume Maker
-              </span>
+            <Link to="/" className="flex items-center group">
+              <img 
+                src="/images/Career-Draft.png" 
+                alt="CareerDraft Logo" 
+                className="h-9 w-auto object-contain" 
+              />
             </Link>
           </div>
 
