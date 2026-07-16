@@ -31,7 +31,7 @@ const RED = "#E85D4E";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (n) => (n ?? 0).toLocaleString();
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
-const fmtAmount = (a) => `₹${((a ?? 0) / 100).toFixed(2)}`;
+const fmtAmount = (a) => `₹${(a ?? 0).toFixed(2)}`;
 
 // ── Stat card (Module 1) ──────────────────────────────────────────────────────
 const StatCard = ({ icon: Icon, label, value, color = AMBER }) => (
