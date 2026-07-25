@@ -1,4 +1,4 @@
-# CareerDraft AI — Intelligent Resume Builder & ATS Analyzer
+<img width="1911" height="872" alt="image" src="https://github.com/user-attachments/assets/abfb3304-18f1-4c3b-b4df-4cf9d6e4beb0" /># CareerDraft AI — Intelligent Resume Builder & ATS Analyzer
 
 [![Java Version](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.3-brightgreen?style=for-the-badge&logo=springboot)](https://spring.io/projects/spring-boot)
@@ -21,7 +21,9 @@ An intelligent SaaS platform that empowers job seekers to build, tailor, and ana
 
 ## 📷 Screenshots
 
-![Landing Page](./screenshots/landing.png)
+![Landing Page)
+<img width="1911" height="872" alt="image" src="https://github.com/user-attachments/assets/36dec99f-2b08-4033-8996-79cdb05ccf13" />
+
 *Modern responsive landing page featuring direct onboarding and key visual callouts.*
 
 ![ATS Analysis](./screenshots/ats-analysis.png)
