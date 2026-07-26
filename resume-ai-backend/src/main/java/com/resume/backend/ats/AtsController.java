@@ -174,7 +174,7 @@ public class AtsController {
                     resumeFile.getOriginalFilename(),
                     resumeFile.getSize(),
                     getExtension(resumeFile.getOriginalFilename()),
-                    isLocked ? 0 : (isPro ? null : remainingScans));
+                    isLocked ? Integer.valueOf(0) : (isPro ? null : remainingScans));
 
             response.setIsLocked(isLocked);
             response.setEngineUsed(scoringResult.engine);

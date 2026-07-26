@@ -135,6 +135,40 @@ class AtsAnalyzerServiceImplTest {
                 scores.values().forEach(v -> assertTrue(v >= 0, "Score dimension should be >= 0"));
         }
 
+        // ── Test 7: Accuracy Improvements (C++, Seniority Max, Java/JavaScript Separation) ──
+        @Test
+        void testAtsAnalysis_AccuracyImprovements() {
+                // 1. Verify C++ literal matching behaves correctly (escaped regex quantifiers)
+                Map<String, Object> resumeData = new HashMap<>();
+                resumeData.put("personalInformation", Map.of("fullName", "C++ Dev"));
+                resumeData.put("summary", "Senior software developer specializing in C++ programming.");
+                // Add experience starting in 2022 (so candidate has 4 years of experience in 2026)
+                resumeData.put("experience", Arrays.asList(
+                                Map.of("jobTitle", "Developer", "company", "Tech", "startDate", "2022", "description", "C++ development")
+                ));
+
+                // A JD with multiple experience requirements: 5+ years for Java, 3+ years for Spring Boot
+                // This ensures our extractMinYearsFromJd takes the max (5 years) rather than min (3 years)
+                String jd = "Senior Java Engineer. We require 5+ years of experience in Java and 3+ years of experience in Spring Boot. Knowledge of C++ is required.";
+
+                AtsResultDTO result = atsAnalyzerService.analyzeResume(resumeData, jd);
+
+                // Check that C++ was successfully matched (which would fail with unescaped c++ regex)
+                assertTrue(result.getMatchedKeywords().stream().anyMatch(k -> k.equalsIgnoreCase("C++")),
+                                "C++ should be matched correctly as a keyword");
+
+                // Check that java (not present in resume) does not false-match JavaScript or vice versa
+                assertFalse(result.getMatchedKeywords().stream().anyMatch(k -> k.equalsIgnoreCase("Java")),
+                                "Java should not be matched since it is not in the resume");
+
+                // Check experience alignment score
+                // Candidate years: 2026 - 2022 = 4 years
+                // If JD benchmark took minimum (3 years), 4 >= 3 -> score 15
+                // If JD benchmark took maximum (5 years), 5 - 4 = 1 year gap -> score 12
+                int expScore = result.getSectionScores().getOrDefault("experienceAlignment", 0);
+                assertEquals(12, expScore, "Experience score should reflect the 1-year gap against the maximum 5-year requirement, not the 3-year minimum");
+        }
+
         // ── Helpers ───────────────────────────────────────────────────────────────
 
         private Map<String, Object> createSampleResumeData() {
