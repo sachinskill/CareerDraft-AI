@@ -96,7 +96,7 @@ public class AtsResultMapper {
         dto.setSemanticSimilarity(Math.round(semantic * 100.0) / 100.0);
 
         // Re-align overall score with high semantic alignment / keyword match percentage
-        double semanticPct = dto.getSemanticSimilarity() != null && dto.getSemanticSimilarity() > 0 ? dto.getSemanticSimilarity() : dto.getKeywordMatchPercentage();
+        double semanticPct = dto.getSemanticSimilarity() > 0 ? dto.getSemanticSimilarity() : dto.getKeywordMatchPercentage();
         if (semanticPct >= 75.0 && dto.getAtsScore() < 60) {
             int adjusted = (int) Math.round(semanticPct * 0.85);
             dto.setAtsScore(Math.max(dto.getAtsScore(), adjusted));
