@@ -618,39 +618,10 @@ const LandingPage = () => {
         </div>
       </motion.section>
 
-      {/* Footer */}
-      <footer className="py-10 bg-[var(--paper)] text-[var(--ink-navy)] border-t border-[var(--border-hairline)] relative z-10">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div>
-              <span className="font-space font-medium text-lg text-[var(--ink-navy)]">CareerDraft</span>
-              <p className="text-xs text-[var(--text-secondary)] font-sans mt-2 leading-relaxed">
-                Build, analyze, and optimize your resume with AI.
-              </p>
-            </div>
-            <div>
-              <span className="font-space font-medium text-xs uppercase tracking-wider text-[var(--ink-navy)]">Quick Links</span>
-              <div className="flex flex-col gap-1.5 mt-2">
-                <Link to="/generate-resume" className="hover:underline text-xs font-sans text-[var(--ink-navy)]/80 hover:text-[var(--ink-navy)]">Build Resume</Link>
-                <Link to="/ats-analysis" className="hover:underline text-xs font-sans text-[var(--ink-navy)]/80 hover:text-[var(--ink-navy)]">ATS Analysis</Link>
-                <Link to="/about" className="hover:underline text-xs font-sans text-[var(--ink-navy)]/80 hover:text-[var(--ink-navy)]">About</Link>
-              </div>
-            </div>
-            <div>
-              <span className="font-space font-medium text-xs uppercase tracking-wider text-[var(--ink-navy)]">Legal</span>
-              <div className="flex flex-col gap-1.5 mt-2">
-                <a href="#" className="hover:underline text-xs font-sans text-[var(--ink-navy)]/80 hover:text-[var(--ink-navy)]">Privacy Policy</a>
-                <a href="#" className="hover:underline text-xs font-sans text-[var(--ink-navy)]/80 hover:text-[var(--ink-navy)]">Terms of Service</a>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 pt-4 border-t border-[var(--border-hairline)] text-xs text-[var(--text-secondary)] text-center font-sans">
-            {new Date().getFullYear()} CareerDraft. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      {/* Footer is rendered globally via Root.jsx */}
     </div>
   );
+};
 };
 
 export default LandingPage;
