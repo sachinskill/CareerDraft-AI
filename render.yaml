@@ -1,0 +1,67 @@
+services:
+  # ── Spring Boot Backend ──────────────────────────────────────────────────────
+  - type: web
+    name: career-draft-ai-backend
+    runtime: docker
+    dockerfilePath: ./resume-ai-backend/Dockerfile
+    dockerContext: ./resume-ai-backend
+    plan: free          # upgrade to starter/standard for production workloads
+    healthCheckPath: /actuator/health
+
+    envVars:
+      # Database — Supabase PostgreSQL (Transaction Pooler, port 5432)
+      - key: DB_URL
+        sync: false     # Set manually in Render dashboard
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # AI
+      - key: AI_MODE
+        value: groq
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+
+      # JWT
+      - key: JWT_SECRET
+        generateValue: true   # Render auto-generates a secure random value
+
+      # Cookie — MUST be true on Render (HTTPS) so browser sends the cookie cross-site
+      - key: COOKIE_SECURE
+        value: "true"
+      # Leave COOKIE_DOMAIN blank for cross-origin Vercel ↔ Render setup
+      - key: COOKIE_DOMAIN
+        value: ""
+
+      # CORS — add your Vercel URL here (comma-separated, no spaces)
+      - key: CORS_ALLOWED_ORIGINS
+        value: "http://localhost:5173,http://localhost:3000,https://career-draft-ai.vercel.app"
+
+      # Frontend URL — used in password-reset email links
+      - key: FRONTEND_URL
+        value: "https://career-draft-ai.vercel.app"
+
+      # Razorpay
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+
+      # Email (Resend)
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+
+      # Python ATS service — leave blank to use the Java fallback scorer
+      # Deploy ats-python-service separately and set this to its URL if needed
+      - key: ATS_PYTHON_URL
+        value: ""
+
+      # Render sets PORT automatically — Spring Boot reads it via ${PORT:8080}
+      # Do NOT set PORT manually here

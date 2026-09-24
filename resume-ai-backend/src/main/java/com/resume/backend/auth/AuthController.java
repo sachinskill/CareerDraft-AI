@@ -38,6 +38,9 @@ public class AuthController {
     @Value("${app.cookie.secure:false}")
     private boolean secureCookie;
 
+    @Value("${app.cookie.domain:}")
+    private String cookieDomain;
+
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
@@ -254,14 +257,16 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, "")
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(secureCookie)
                 .sameSite(secureCookie ? "None" : "Lax")
                 .path("/")
-                .maxAge(0)
-                .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+                .maxAge(0);
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
+        response.addHeader("Set-Cookie", builder.build().toString());
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
@@ -280,14 +285,19 @@ public class AuthController {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void setAuthCookie(HttpServletResponse response, String token) {
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, token)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(COOKIE_NAME, token)
                 .httpOnly(true)
                 .secure(secureCookie)
                 .sameSite(secureCookie ? "None" : "Lax")
                 .path("/")
-                .maxAge(7 * 24 * 60 * 60)
-                .build();
-
+                .maxAge(7 * 24 * 60 * 60);
+        // Only set domain when explicitly configured — omitting it is correct for
+        // cross-site deployments (Vercel frontend → Render backend) because the
+        // browser will scope the cookie to the backend's own origin.
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
+        ResponseCookie cookie = builder.build();
         response.addHeader("Set-Cookie", cookie.toString());
         logger.info("Auth cookie set: {}", cookie.toString().replaceAll("auth_token=[^;]+", "auth_token=***"));
     }

@@ -14,7 +14,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -68,11 +70,13 @@ public class SecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        // Direct production whitelist without env dependency
-        List<String> origins = List.of(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://career-draft-ai.vercel.app");
+        // Parse comma-separated origins from the CORS_ALLOWED_ORIGINS env var.
+        // Always includes localhost origins for local dev; production Vercel URL is
+        // injected via the environment variable on Render.
+        List<String> origins = Arrays.stream(allowedOriginsRaw.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toList());
 
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(origins);

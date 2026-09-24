@@ -15,7 +15,7 @@ axiosInstance.interceptors.response.use(
     if (error.code === "ECONNABORTED") {
       error.message = "Request timed out. The server took too long to respond.";
     } else if (error.code === "ERR_NETWORK" || !error.response) {
-      error.message = "Cannot connect to server. Please ensure the backend is running on port 8081.";
+      error.message = "Cannot connect to server. Please check your internet connection or try again later.";
     }
     return Promise.reject(error);
   }

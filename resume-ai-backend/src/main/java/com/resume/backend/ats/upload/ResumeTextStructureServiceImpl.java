@@ -183,9 +183,9 @@ public class ResumeTextStructureServiceImpl implements ResumeTextStructureServic
     }
 
     private String loadPromptFromFile(String filename) throws IOException {
-        ClassPathResource resource = new ClassPathResource(filename);
-        java.nio.file.Path path = resource.getFile().toPath();
-        return java.nio.file.Files.readString(path);
+        try (java.io.InputStream is = new ClassPathResource(filename).getInputStream()) {
+            return new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
     }
 
     // Helper methods for interface compatibility (can be deprecated or removed

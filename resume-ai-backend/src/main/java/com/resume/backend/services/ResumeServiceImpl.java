@@ -9,8 +9,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -142,8 +142,12 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     String loadPromptFromFile(String filename) throws IOException {
-        Path path = new ClassPathResource(filename).getFile().toPath();
-        return Files.readString(path);
+        // Use getInputStream() — works both on the filesystem (dev) and inside a
+        // packaged JAR (production on Render). getFile() only works on the filesystem
+        // and throws FileNotFoundException when resources are embedded in a JAR.
+        try (InputStream is = new ClassPathResource(filename).getInputStream()) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     String putValuesToTemplate(String template, Map<String, String> values) {

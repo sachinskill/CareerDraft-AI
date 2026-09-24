@@ -8,8 +8,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +30,12 @@ public class AtsComprehensiveServiceImpl implements AtsComprehensiveService {
     public AtsResultDTO executeComprehensiveAnalysis(String resumeText, String jobDescription) throws Exception {
         logger.info("Starting unified comprehensive ATS Analysis (Single LLM Call) to avoid Rate Limits.");
 
-        // 1. Load the comprehensive prompt
-        Path path = new ClassPathResource("comprehensive_ats_prompt.txt").getFile().toPath();
-        String promptTemplate = Files.readString(path);
+        // 1. Load the comprehensive prompt — use getInputStream() so it works inside
+        //    a packaged JAR (production on Render). getFile() only works on the filesystem.
+        String promptTemplate;
+        try (InputStream is = new ClassPathResource("comprehensive_ats_prompt.txt").getInputStream()) {
+            promptTemplate = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
 
         // 2. Inject parameters
         String prompt = promptTemplate
